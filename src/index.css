@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --primary-gold: #c6923e;
+  --secondary-gold: #dfb76c;
+  --accent-gold-light: #f5dfa8;
+  --wine-dark: #3a0a24;
+  --wine-deep: #220314;
+  --wine-soft: #571638;
+  --text-primary: #231920;
+  --text-secondary: #63575f;
+  --font-serif: 'Cinzel', 'Playfair Display', Georgia, serif;
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  --nav-glass-bg: rgba(255, 255, 255, 0.72);
+  --nav-glass-scrolled: rgba(255, 255, 255, 0.88);
+  --nav-glass-border: rgba(198, 146, 62, 0.22);
+  --nav-shadow: 0 10px 35px -5px rgba(58, 10, 36, 0.07), 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background-color: #faf6f0;
+  background-image: 
+    radial-gradient(at 15% 10%, rgba(223, 183, 108, 0.12) 0px, transparent 50%),
+    radial-gradient(at 85% 15%, rgba(58, 10, 36, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(255, 255, 255, 0.6) 0px, transparent 70%),
+    radial-gradient(at 75% 85%, rgba(198, 146, 62, 0.09) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}

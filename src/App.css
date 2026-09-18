@@ -1,0 +1,114 @@
+.app-container {
+  width: 100%;
+  min-height: 200vh;
+  position: relative;
+}
+
+/* Luxury Showcase Canvas to experience transparency & sticky scroll */
+.hero-scroll-canvas {
+  padding-top: 140px;
+  min-height: 200vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ambient Silk Texture Overlay */
+.silk-ambient-glow {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 400px;
+  background: radial-gradient(
+    ellipse,
+    rgba(223, 183, 108, 0.22) 0%,
+    rgba(143, 32, 83, 0.08) 50%,
+    transparent 75%
+  );
+  filter: blur(50px);
+  pointer-events: none;
+}
+
+.hero-welcome-content {
+  text-align: center;
+  max-width: 800px;
+  padding: 3rem 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-subheading {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: #8c6020;
+  margin-bottom: 1.25rem;
+  display: block;
+}
+
+.hero-main-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 3.25rem;
+  font-weight: 600;
+  color: #2b0c1e;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+.hero-tagline {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: #63525c;
+  line-height: 1.7;
+  max-width: 580px;
+  margin: 0 auto 2.5rem;
+}
+
+.scroll-indicator-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(198, 146, 62, 0.3);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #571638;
+  box-shadow: 0 4px 15px rgba(198, 146, 62, 0.12);
+  animation: floatBounce 2.4s ease-in-out infinite;
+}
+
+.scroll-arrow-down {
+  font-size: 0.9rem;
+  color: #c6923e;
+}
+
+@keyframes floatBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-main-title {
+    font-size: 2.2rem;
+  }
+  .hero-scroll-canvas {
+    padding-top: 110px;
+  }
+}
