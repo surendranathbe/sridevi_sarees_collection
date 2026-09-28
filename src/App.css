@@ -1,13 +1,13 @@
 .app-container {
   width: 100%;
-  min-height: 200vh;
+  max-width: 100%;
+  overflow-x: hidden;
   position: relative;
 }
 
 /* Luxury Showcase Canvas to experience transparency & sticky scroll */
 .hero-scroll-canvas {
-  padding-top: 140px;
-  min-height: 200vh;
+  padding-top: 130px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -21,7 +21,7 @@
   top: 60px;
   left: 50%;
   transform: translateX(-50%);
-  width: 800px;
+  width: min(800px, 95vw);
   height: 400px;
   background: radial-gradient(
     ellipse,
@@ -110,5 +110,595 @@
   }
   .hero-scroll-canvas {
     padding-top: 110px;
+  }
+}
+
+/* =========================================================
+   ABOUT US / HERITAGE SECTION (FITS VIEWPORT WITHOUT SCROLLING)
+   ========================================================= */
+.about-heritage-section {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  background: radial-gradient(ellipse at 85% 20%, rgba(223, 183, 108, 0.12) 0%, transparent 60%),
+              linear-gradient(180deg, #fdfaf6 0%, #faf3e8 100%);
+  border-top: 1px solid rgba(198, 146, 62, 0.25);
+  border-bottom: 1px solid rgba(198, 146, 62, 0.25);
+  padding: 1.25rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+@media (min-width: 992px) {
+  .about-heritage-section {
+    height: calc(100vh - 105px);
+    max-height: calc(100vh - 105px);
+    overflow: hidden;
+  }
+}
+
+.about-container {
+  max-width: 1380px;
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 430px 1fr;
+  gap: 3rem;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* Left Column: Visual Saree Card & Thumbnails */
+.about-visual-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.about-image-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #200817;
+  border: 1px solid rgba(198, 146, 62, 0.4);
+  box-shadow: 0 12px 34px rgba(43, 10, 28, 0.16);
+}
+
+.about-showcase-img {
+  width: 100%;
+  height: clamp(330px, calc(100vh - 235px), 480px);
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.about-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(38, 9, 26, 0.9);
+  border: 1px solid rgba(223, 183, 108, 0.55);
+  color: #f7ebcf;
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+}
+
+.about-floating-bar {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 8px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(198, 146, 62, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.about-floating-bar h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: #2b0c1e;
+  margin: 0;
+}
+
+.about-floating-bar span {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 0.86rem;
+  color: #8c6020;
+}
+
+.about-thumbs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+}
+
+.about-thumb-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(198, 146, 62, 0.28);
+  border-radius: 10px;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #4a1932;
+  gap: 3px;
+  transition: all 0.25s ease;
+}
+
+.about-thumb-btn:hover {
+  border-color: rgba(198, 146, 62, 0.7);
+  transform: translateY(-2px);
+}
+
+.about-thumb-btn.active {
+  border-color: #c6923e;
+  box-shadow: 0 4px 12px rgba(198, 146, 62, 0.35);
+  background: #ffffff;
+}
+
+.about-thumb-btn img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* Right Column: Clean Content Area */
+.about-content-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.about-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #8c5b1b;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.about-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 2.8vw, 2.5rem);
+  font-weight: 600;
+  color: #260a1d;
+  line-height: 1.16;
+  margin: 0;
+}
+
+.about-title span {
+  color: #a46d1b;
+}
+
+.about-desc {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: #4e3a45;
+  margin: 0;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.about-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(198, 146, 62, 0.28);
+  border-radius: 12px;
+  padding: 10px 14px;
+  transition: all 0.25s ease;
+}
+
+.about-card:hover {
+  background: #ffffff;
+  border-color: rgba(198, 146, 62, 0.55);
+  box-shadow: 0 4px 14px rgba(68, 14, 43, 0.08);
+}
+
+.about-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #440e2b, #2b081b);
+  color: #dfb76c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.about-card h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.94rem;
+  font-weight: 600;
+  margin: 0;
+  color: #230819;
+}
+
+.about-card p {
+  font-size: 0.78rem;
+  color: #5a4551;
+  margin: 3px 0 0;
+  line-height: 1.35;
+}
+
+.about-stats {
+  display: flex;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(198, 146, 62, 0.35);
+  border-radius: 12px;
+  padding: 10px 22px;
+  box-shadow: 0 4px 14px rgba(68, 14, 43, 0.04);
+}
+
+.about-stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-stat-num {
+  font-family: 'Cinzel', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #8c5b1b;
+  line-height: 1;
+}
+
+.about-stat-lbl {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #614a56;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+.about-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.about-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #87194f, #4f0b2d);
+  color: #f7ebcf;
+  border: 1px solid rgba(223, 183, 108, 0.5);
+  padding: 11px 24px;
+  border-radius: 28px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(79, 11, 45, 0.25);
+}
+
+.about-btn-primary:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #9e205e, #5f0e37);
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(79, 11, 45, 0.35);
+}
+
+.about-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #440e2b;
+  border: 1.5px solid rgba(198, 146, 62, 0.4);
+  padding: 11px 20px;
+  border-radius: 28px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.about-btn-secondary:hover {
+  background: #ffffff;
+  border-color: #c6923e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(198, 146, 62, 0.2);
+}
+
+@media (max-width: 991px) {
+  .about-heritage-section {
+    padding: 2.5rem 1rem;
+    height: auto;
+    max-height: none;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .about-container {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+    width: 100%;
+    padding: 0;
+  }
+  .about-visual-col {
+    max-width: 360px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .about-showcase-img {
+    height: clamp(260px, 65vw, 360px);
+  }
+  .about-content-col {
+    width: 100%;
+    text-align: center;
+    align-items: center;
+    gap: 0.85rem;
+  }
+  .about-eyebrow {
+    align-self: center;
+  }
+  .about-title {
+    font-size: clamp(1.6rem, 5.5vw, 2rem);
+  }
+  .about-desc {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    max-width: 480px;
+  }
+  .about-grid {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 420px;
+    gap: 0.65rem;
+  }
+  .about-card {
+    text-align: left;
+  }
+  .about-stats {
+    width: 100%;
+    max-width: 420px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    text-align: center;
+  }
+  .about-actions {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .about-btn-primary,
+  .about-btn-secondary {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
+  }
+}
+
+/* =========================================================
+   SPECIAL SCROLLING TRANSITION & REVEAL EFFECTS
+   ========================================================= */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Elegant Silk Transition Divider between Hero and About */
+.banner-scroll-seam {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1.1rem 2rem;
+  background: linear-gradient(180deg, rgba(253, 250, 246, 0.95), #faf3e8);
+  border-top: 1px solid rgba(198, 146, 62, 0.2);
+  border-bottom: 1px solid rgba(198, 146, 62, 0.2);
+  z-index: 10;
+}
+
+.scroll-seam-line {
+  flex: 1;
+  max-width: 260px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(198, 146, 62, 0.5), transparent);
+}
+
+.scroll-seam-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(198, 146, 62, 0.4);
+  border-radius: 20px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #7b4c10;
+  box-shadow: 0 4px 15px rgba(198, 146, 62, 0.14);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-seam-badge:hover {
+  transform: translateY(-2px);
+  border-color: #c6923e;
+  box-shadow: 0 6px 22px rgba(198, 146, 62, 0.25);
+  background: #ffffff;
+}
+
+.seam-ornament {
+  color: #c6923e;
+}
+
+/* Ambient Radial Glow Behind About Section on Scroll */
+.about-ambient-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(900px, 95vw);
+  height: 500px;
+  background: radial-gradient(ellipse, rgba(223, 183, 108, 0.15) 0%, rgba(87, 22, 56, 0.08) 50%, transparent 75%);
+  filter: blur(60px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.about-heritage-section.in-view .about-ambient-glow {
+  opacity: 1;
+}
+
+/* Left Column Entrance Animation */
+.about-heritage-section .about-visual-col {
+  opacity: 0;
+  transform: translateX(-35px) scale(0.97);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.about-heritage-section.in-view .about-visual-col {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+/* Right Column Staggered Entrance Animations */
+.about-heritage-section .about-eyebrow {
+  opacity: 0;
+  transform: translateY(-14px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+}
+
+.about-heritage-section .about-title {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.18s,
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.18s;
+}
+
+.about-heritage-section .about-desc {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.26s,
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.26s;
+}
+
+.about-heritage-section .about-grid .about-card {
+  opacity: 0;
+  transform: translateY(18px) scale(0.98);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.25s ease,
+              border-color 0.25s ease;
+}
+
+.about-heritage-section.in-view .about-grid .about-card:nth-child(1) {
+  opacity: 1; transform: translateY(0) scale(1); transition-delay: 0.32s;
+}
+.about-heritage-section.in-view .about-grid .about-card:nth-child(2) {
+  opacity: 1; transform: translateY(0) scale(1); transition-delay: 0.40s;
+}
+.about-heritage-section.in-view .about-grid .about-card:nth-child(3) {
+  opacity: 1; transform: translateY(0) scale(1); transition-delay: 0.48s;
+}
+.about-heritage-section.in-view .about-grid .about-card:nth-child(4) {
+  opacity: 1; transform: translateY(0) scale(1); transition-delay: 0.56s;
+}
+
+.about-heritage-section .about-stats {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.62s,
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.62s;
+}
+
+.about-heritage-section .about-actions {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.7s,
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.7s;
+}
+
+.about-heritage-section.in-view .about-eyebrow,
+.about-heritage-section.in-view .about-title,
+.about-heritage-section.in-view .about-desc,
+.about-heritage-section.in-view .about-stats,
+.about-heritage-section.in-view .about-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Subtle Golden Shimmer across the Saree Image upon entry */
+.about-image-card::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: linear-gradient(
+    60deg,
+    transparent 42%,
+    rgba(223, 183, 108, 0.28) 50%,
+    transparent 58%
+  );
+  transform: translateX(-100%);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.about-heritage-section.in-view .about-image-card::after {
+  animation: silkShimmerPass 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s forwards;
+}
+
+@keyframes silkShimmerPass {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%) rotate(25deg);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%) rotate(25deg);
   }
 }
