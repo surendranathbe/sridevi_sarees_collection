@@ -120,23 +120,20 @@
   position: relative;
   width: 100%;
   max-width: 100%;
-  background: radial-gradient(ellipse at 85% 20%, rgba(223, 183, 108, 0.12) 0%, transparent 60%),
+  background: radial-gradient(ellipse at 85% 20%, rgba(223, 183, 108, 0.15) 0%, transparent 60%),
               linear-gradient(180deg, #fdfaf6 0%, #faf3e8 100%);
   border-top: 1px solid rgba(198, 146, 62, 0.25);
   border-bottom: 1px solid rgba(198, 146, 62, 0.25);
-  padding: 1.25rem 2.5rem;
+  padding: 2.2rem 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 @media (min-width: 992px) {
   .about-heritage-section {
-    height: calc(100vh - 105px);
-    max-height: calc(100vh - 105px);
-    overflow: hidden;
+    min-height: calc(100vh - 105px);
   }
 }
 
@@ -567,7 +564,7 @@ html {
   color: #c6923e;
 }
 
-/* Ambient Radial Glow Behind About Section on Scroll */
+/* Ambient Radial Glow Behind About Section - Always Radiant */
 .about-ambient-glow {
   position: absolute;
   top: 50%;
@@ -575,130 +572,1777 @@ html {
   transform: translate(-50%, -50%);
   width: min(900px, 95vw);
   height: 500px;
-  background: radial-gradient(ellipse, rgba(223, 183, 108, 0.15) 0%, rgba(87, 22, 56, 0.08) 50%, transparent 75%);
+  background: radial-gradient(ellipse, rgba(223, 183, 108, 0.18) 0%, rgba(87, 22, 56, 0.08) 50%, transparent 75%);
   filter: blur(60px);
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 1.2s ease;
-}
-
-.about-heritage-section.in-view .about-ambient-glow {
   opacity: 1;
 }
 
-/* Left Column Entrance Animation */
+/* Left Column - Crisp and Immediately Visible */
 .about-heritage-section .about-visual-col {
-  opacity: 0;
-  transform: translateX(-35px) scale(0.97);
-  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.about-heritage-section.in-view .about-visual-col {
   opacity: 1;
-  transform: translateX(0) scale(1);
+  transform: none;
 }
 
-/* Right Column Staggered Entrance Animations */
-.about-heritage-section .about-eyebrow {
-  opacity: 0;
-  transform: translateY(-14px);
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
-              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
-}
-
-.about-heritage-section .about-title {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.18s,
-              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.18s;
-}
-
-.about-heritage-section .about-desc {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.26s,
-              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.26s;
+/* Right Column Content - Crisp and Immediately Visible */
+.about-heritage-section .about-eyebrow,
+.about-heritage-section .about-title,
+.about-heritage-section .about-desc,
+.about-heritage-section .about-stats,
+.about-heritage-section .about-actions {
+  opacity: 1;
+  transform: none;
 }
 
 .about-heritage-section .about-grid .about-card {
-  opacity: 0;
-  transform: translateY(18px) scale(0.98);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-              background 0.25s ease,
-              border-color 0.25s ease;
-}
-
-.about-heritage-section.in-view .about-grid .about-card:nth-child(1) {
-  opacity: 1; transform: translateY(0) scale(1); transition-delay: 0.32s;
-}
-.about-heritage-section.in-view .about-grid .about-card:nth-child(2) {
-  opacity: 1; transform: translateY(0) scale(1); transition-delay: 0.40s;
-}
-.about-heritage-section.in-view .about-grid .about-card:nth-child(3) {
-  opacity: 1; transform: translateY(0) scale(1); transition-delay: 0.48s;
-}
-.about-heritage-section.in-view .about-grid .about-card:nth-child(4) {
-  opacity: 1; transform: translateY(0) scale(1); transition-delay: 0.56s;
-}
-
-.about-heritage-section .about-stats {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.62s,
-              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.62s;
-}
-
-.about-heritage-section .about-actions {
-  opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.7s,
-              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.7s;
-}
-
-.about-heritage-section.in-view .about-eyebrow,
-.about-heritage-section.in-view .about-title,
-.about-heritage-section.in-view .about-desc,
-.about-heritage-section.in-view .about-stats,
-.about-heritage-section.in-view .about-actions {
   opacity: 1;
+  transform: none;
+  background: #ffffff;
+  border: 1px solid rgba(198, 146, 62, 0.35);
+  box-shadow: 0 4px 14px rgba(68, 14, 43, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.about-heritage-section .about-grid .about-card:hover {
+  transform: translateY(-2px);
+  border-color: #c6923e;
+  box-shadow: 0 8px 22px rgba(68, 14, 43, 0.12);
+}
+
+/* ==========================================================================
+   SHOP BY OCCASION / TELUGU FESTIVE TRADITIONS SECTION
+   ========================================================================== */
+
+.occasion-section {
+  position: relative;
+  width: 100%;
+  background-color: #faf6ef;
+  background-image: 
+    radial-gradient(ellipse 60% 40% at 50% 10%, rgba(223, 183, 108, 0.16) 0%, transparent 60%),
+    radial-gradient(circle at 10% 90%, rgba(143, 32, 83, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 90% 85%, rgba(198, 146, 62, 0.1) 0%, transparent 50%);
+  padding: 6rem 2rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.occasion-ambient-glow {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(900px, 95vw);
+  height: 450px;
+  background: radial-gradient(circle, rgba(223, 183, 108, 0.15) 0%, transparent 65%);
+  filter: blur(65px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.occasion-container {
+  position: relative;
+  z-index: 2;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header Alignment */
+.occasion-header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+.occasion-eyebrow-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.occasion-accent-ornament {
+  color: #c6923e;
+  font-size: 0.85rem;
+}
+
+.occasion-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: #8c2050;
+  text-transform: uppercase;
+}
+
+.occasion-title {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.5rem, 2.8vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  color: #2b0c1e;
+  margin: 0 0 0.85rem 0;
+  text-transform: uppercase;
+}
+
+.occasion-subtitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 400;
+  color: #62505a;
+  max-width: 660px;
+  margin: 0 auto;
+  line-height: 1.65;
+}
+
+/* Slider Track Layout */
+.occasion-slider-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.occasion-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: 1.35rem;
+  padding: 0.75rem 0.25rem 1.5rem;
+}
+
+.occasion-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Desktop (>= 1024px): 4 Saree Cards visible at a time */
+@media (min-width: 1024px) {
+  .occasion-card {
+    flex: 0 0 calc((100% - (3 * 1.35rem)) / 4);
+    min-width: calc((100% - (3 * 1.35rem)) / 4);
+    scroll-snap-align: start;
+  }
+}
+
+/* Card Visual Architecture */
+.occasion-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #1a0613;
+  box-shadow: 0 10px 28px rgba(43, 12, 30, 0.12);
+  border: 1px solid rgba(198, 146, 62, 0.32);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.4s ease, 
+              border-color 0.4s ease;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.occasion-card-inner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4.3;
+  overflow: hidden;
+}
+
+/* Top Fabric Badge */
+.occasion-top-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  background: rgba(35, 6, 24, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(223, 183, 108, 0.5);
+  color: #f7e6c4;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+.occasion-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+  display: block;
+}
+
+/* Rich Saree Vignette Overlay */
+.occasion-card-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(22, 3, 15, 0.95) 0%,
+    rgba(22, 3, 15, 0.62) 42%,
+    rgba(0, 0, 0, 0.08) 72%,
+    transparent 100%
+  );
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+/* Bottom Card Content */
+.occasion-card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem 1.15rem 1.65rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 2;
+}
+
+.occasion-card-title {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.15rem, 1.6vw, 1.55rem);
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.35rem 0;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+  transition: transform 0.35s ease, color 0.35s ease;
+}
+
+.occasion-card-sub {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  color: #dfb76c;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 1rem 0;
+  font-weight: 500;
+  opacity: 0.95;
+  transition: color 0.35s ease;
+}
+
+/* Special "SHOP NOW" Button */
+.occasion-shop-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.62rem 1.5rem;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #3b0821;
+  border: 1px solid rgba(223, 183, 108, 0.6);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   transform: translateY(0);
 }
 
-/* Subtle Golden Shimmer across the Saree Image upon entry */
-.about-image-card::after {
-  content: '';
+.occasion-btn-arrow {
+  display: inline-block;
+  font-size: 0.9rem;
+  transition: transform 0.3s ease;
+}
+
+/* =========================================================
+   SPECIAL HOVER EXPERIENCE (CARD & SHOP NOW BUTTON)
+   ========================================================= */
+
+@media (hover: hover) and (pointer: fine) {
+  .occasion-card:hover {
+    transform: translateY(-6px);
+    border-color: #dfb76c;
+    box-shadow: 0 18px 40px rgba(43, 12, 30, 0.24);
+  }
+
+  .occasion-card:hover .occasion-card-img {
+    transform: scale(1.08);
+    filter: brightness(1.06);
+  }
+
+  .occasion-card:hover .occasion-card-title {
+    color: #fff9ed;
+    transform: translateY(-2px);
+  }
+
+  /* SHOP NOW displays specially on hover */
+  .occasion-card:hover .occasion-shop-btn {
+    transform: translateY(-4px) scale(1.05);
+    background: linear-gradient(135deg, #dfb76c 0%, #c6923e 100%);
+    color: #240313;
+    border-color: #ffe6aa;
+    box-shadow: 0 8px 24px rgba(223, 183, 108, 0.6), 0 3px 10px rgba(0, 0, 0, 0.35);
+  }
+
+  .occasion-card:hover .occasion-btn-arrow {
+    transform: translateX(4px);
+  }
+}
+
+.occasion-shop-btn:active {
+  transform: scale(0.97);
+}
+
+/* Floating Navigation Controls */
+.occasion-nav-btn {
   position: absolute;
-  top: -60%;
-  left: -60%;
-  width: 220%;
-  height: 220%;
-  background: linear-gradient(
-    60deg,
-    transparent 42%,
-    rgba(223, 183, 108, 0.28) 50%,
-    transparent 58%
-  );
-  transform: translateX(-100%);
-  pointer-events: none;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid rgba(198, 146, 62, 0.6);
+  color: #4a0e2d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.occasion-nav-btn:hover {
+  background: #4a0e2d;
+  color: #f7e6c4;
+  border-color: #dfb76c;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.occasion-nav-prev {
+  left: -18px;
+}
+
+.occasion-nav-next {
+  right: -18px;
+}
+
+/* =========================================================
+   RESPONSIVE BREAKPOINTS (iPad: 3 images, Mobile: 2 images)
+   ========================================================= */
+
+/* iPad & Tablets (768px - 1023px): Exactly 3 images with sliding effect */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .occasion-section {
+    padding: 4.5rem 1.5rem;
+  }
+
+  .occasion-track {
+    gap: 1.15rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .occasion-card {
+    flex: 0 0 calc((100% - (2 * 1.15rem)) / 3);
+    min-width: calc((100% - (2 * 1.15rem)) / 3);
+    scroll-snap-align: start;
+  }
+
+  .occasion-nav-prev {
+    left: -10px;
+  }
+
+  .occasion-nav-next {
+    right: -10px;
+  }
+}
+
+/* Mobile Screens (< 768px): Exactly 2 images with sliding effect */
+@media (max-width: 767px) {
+  .occasion-section {
+    padding: 3.5rem 1rem 3rem;
+  }
+
+  .occasion-header {
+    margin-bottom: 2rem;
+  }
+
+  .occasion-title {
+    font-size: 1.15rem;
+    line-height: 1.4;
+    letter-spacing: 0.06em;
+  }
+
+  .occasion-subtitle {
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+
+  .occasion-track {
+    gap: 0.75rem;
+    padding: 0.5rem 0.1rem 1rem;
+  }
+
+  .occasion-card {
+    flex: 0 0 calc((100% - 0.75rem) / 2);
+    min-width: calc((100% - 0.75rem) / 2);
+    scroll-snap-align: start;
+    border-radius: 12px;
+  }
+
+  .occasion-top-badge {
+    top: 10px;
+    left: 10px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+  }
+
+  .occasion-card-content {
+    padding: 1rem 0.5rem 1.15rem;
+  }
+
+  .occasion-card-title {
+    font-size: 1.05rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .occasion-card-sub {
+    font-size: 0.62rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .occasion-shop-btn {
+    padding: 0.45rem 1rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    gap: 0.35rem;
+  }
+
+  .occasion-nav-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .occasion-nav-prev {
+    left: -8px;
+  }
+
+  .occasion-nav-next {
+    right: -8px;
+  }
+}
+
+/* =========================================================
+   OUR COLLECTIONS SECTION (HOVER TO DISPLAY MODEL)
+   ========================================================= */
+
+.our-collections-section {
+  position: relative;
+  width: 100%;
+  padding: 5rem 2rem 5.5rem;
+  background: #fbf9f6;
+  border-top: 1px solid rgba(198, 146, 62, 0.2);
+  box-sizing: border-box;
+}
+
+.collections-container {
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+/* Header */
+.collections-header {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 3rem;
+}
+
+.collections-eyebrow-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.collections-ornament {
+  color: #dfb76c;
+  font-size: 0.85rem;
+}
+
+.collections-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #8c6020;
+  font-weight: 600;
+}
+
+.collections-title {
+  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #2b0c1e;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+}
+
+.collections-subtitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  color: #63525c;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* 4 Column Grid for Laptops / Desktops */
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+/* Card item */
+.collection-card {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.collection-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Image Box with Aspect Ratio */
+.collection-media-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4.4;
+  overflow: hidden;
+  border-radius: 6px;
+  background-color: #f1ede6;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+/* Images & Crossfade Transition */
+.collection-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.saree-only-img {
+  opacity: 1;
+  transform: scale(1);
+  z-index: 1;
+}
+
+.model-wearing-img {
+  opacity: 0;
+  transform: scale(1.05);
+  z-index: 2;
+}
+
+/* Hover & Touch Toggle Effect */
+.collection-card:hover .saree-only-img,
+.collection-card.touch-active .saree-only-img {
   opacity: 0;
 }
 
-.about-heritage-section.in-view .about-image-card::after {
-  animation: silkShimmerPass 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s forwards;
+.collection-card:hover .model-wearing-img,
+.collection-card.touch-active .model-wearing-img {
+  opacity: 1;
+  transform: scale(1);
 }
 
-@keyframes silkShimmerPass {
-  0% {
-    opacity: 0;
-    transform: translateX(-100%) rotate(25deg);
+/* Floating Action Buttons (Wishlist & Bag) matching reference photo */
+.collection-card-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-action-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2b0c1e;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.25s ease;
+}
+
+.card-action-btn:hover {
+  background: #ffffff;
+  transform: scale(1.1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+}
+
+.card-action-btn.is-favorited {
+  background: #fff;
+  border-color: rgba(225, 29, 72, 0.3);
+}
+
+/* Drape hint badge */
+.collection-drape-indicator {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(43, 12, 30, 0.82);
+  backdrop-filter: blur(6px);
+  color: #f7e6c4;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.collection-card:hover .collection-drape-indicator {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
+}
+
+/* Details Section below image */
+.collection-card-details {
+  padding-top: 0.85rem;
+}
+
+.collection-saree-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.96rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin: 0 0 0.35rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.collection-price-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.price-as-low {
+  font-size: 0.84rem;
+  color: #666;
+  font-weight: 400;
+}
+
+.price-amount {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #111;
+}
+
+/* =========================================================
+   RESPONSIVENESS (iPad, Tablets & Mobile Screens)
+   ========================================================= */
+
+/* Tablets / iPad (641px - 1024px) */
+@media (max-width: 1024px) {
+  .our-collections-section {
+    padding: 4rem 1.5rem;
   }
-  25% {
-    opacity: 1;
+  .collections-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
   }
-  100% {
-    opacity: 0;
-    transform: translateX(100%) rotate(25deg);
+  .collections-title {
+    font-size: 1.85rem;
   }
 }
+
+/* Mobile Screens (<= 640px) */
+@media (max-width: 640px) {
+  .our-collections-section {
+    padding: 3rem 1rem 3.5rem;
+  }
+  .collections-header {
+    margin-bottom: 2rem;
+  }
+  .collections-title {
+    font-size: 1.45rem;
+  }
+  .collections-subtitle {
+    font-size: 0.82rem;
+  }
+  .collections-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  .collection-card-actions {
+    top: 8px;
+    right: 8px;
+    gap: 6px;
+  }
+  .card-action-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .card-action-btn svg {
+    width: 15px;
+    height: 15px;
+  }
+  .collection-saree-title {
+    font-size: 0.8rem;
+    margin-bottom: 0.2rem;
+  }
+  .price-as-low {
+    font-size: 0.72rem;
+  }
+  .price-amount {
+    font-size: 0.82rem;
+  }
+  .collection-drape-indicator {
+    opacity: 0.85;
+    font-size: 0.58rem;
+    padding: 3px 8px;
+    bottom: 8px;
+  }
+}
+
+/* =========================================================
+   OUR BLOUSE COLLECTION SECTION (COMPUTER WORK ON TABLE)
+   ========================================================= */
+
+.blouse-section {
+  position: relative;
+  width: 100%;
+  padding: 5.5rem 2rem 6rem;
+  background: radial-gradient(ellipse at 15% 10%, rgba(223, 183, 108, 0.12) 0%, transparent 50%),
+              linear-gradient(180deg, #fdfaf6 0%, #f7f2ea 100%);
+  border-top: 1px solid rgba(198, 146, 62, 0.25);
+  box-sizing: border-box;
+}
+
+.blouse-container {
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+/* Header */
+.blouse-header {
+  text-align: center;
+  max-width: 780px;
+  margin: 0 auto 3rem;
+}
+
+.blouse-eyebrow-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.blouse-ornament {
+  color: #dfb76c;
+  font-size: 0.85rem;
+}
+
+.blouse-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #8c6020;
+  font-weight: 600;
+}
+
+.blouse-title {
+  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #2b0c1e;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+}
+
+.blouse-subtitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  color: #63525c;
+  line-height: 1.6;
+  margin: 0 0 1.8rem;
+}
+
+/* Category Filter Tabs */
+.blouse-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.blouse-filter-btn {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(198, 146, 62, 0.35);
+  color: #4a0e2d;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 1.15rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.blouse-filter-btn:hover {
+  background: #f4ece1;
+  border-color: #dfb76c;
+}
+
+.blouse-filter-btn.active {
+  background: #4a0e2d;
+  color: #f7e6c4;
+  border-color: #4a0e2d;
+  box-shadow: 0 4px 14px rgba(74, 14, 45, 0.25);
+}
+
+/* Showcase Layout: 1 Spotlight + 6 Companion Cards */
+.blouse-showcase-layout {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  gap: 2rem;
+  align-items: stretch;
+  margin-bottom: 3.5rem;
+}
+
+/* Left Spotlight Card */
+.blouse-spotlight-col {
+  display: flex;
+}
+
+.blouse-spotlight-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1.5px solid rgba(198, 146, 62, 0.45);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 35px rgba(43, 12, 30, 0.09);
+  width: 100%;
+}
+
+.blouse-spotlight-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+  background: linear-gradient(135deg, #4a0e2d 0%, #290417 100%);
+  color: #f7e6c4;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  border: 1px solid rgba(223, 183, 108, 0.4);
+}
+
+.blouse-spotlight-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3.2;
+  overflow: hidden;
+  background: #1f140e;
+}
+
+.blouse-spotlight-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.blouse-spotlight-card:hover .blouse-spotlight-img {
+  transform: scale(1.03);
+}
+
+.blouse-table-pill {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 3px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.05em;
+}
+
+.blouse-spotlight-info {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.blouse-tags-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.65rem;
+}
+
+.blouse-pill {
+  background: #faf3e8;
+  color: #8c6020;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 4px;
+  border: 1px solid rgba(198, 146, 62, 0.25);
+}
+
+.blouse-pill.highlight {
+  background: #fdf2f4;
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.2);
+}
+
+.blouse-spotlight-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #2b0c1e;
+  margin: 0 0 0.5rem;
+  line-height: 1.35;
+}
+
+.blouse-spotlight-desc {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.86rem;
+  color: #63525c;
+  line-height: 1.55;
+  margin: 0 0 1.25rem;
+  flex-grow: 1;
+}
+
+.blouse-spotlight-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(198, 146, 62, 0.2);
+}
+
+.blouse-spotlight-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.price-tag-now {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2b0c1e;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.price-tag-was {
+  font-size: 0.88rem;
+  color: #888;
+  text-decoration: line-through;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.blouse-whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #15803d;
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.blouse-whatsapp-btn:hover {
+  background: #166534;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+}
+
+/* Companion Blouse Cards Grid */
+.blouse-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.blouse-cards-grid.full-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Blouse Card */
+.blouse-item-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(198, 146, 62, 0.25);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.blouse-item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(43, 12, 30, 0.1);
+  border-color: rgba(198, 146, 62, 0.5);
+}
+
+.blouse-card-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.92);
+  color: #4a0e2d;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.22rem 0.55rem;
+  border-radius: 12px;
+  border: 1px solid rgba(198, 146, 62, 0.3);
+}
+
+.blouse-media-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3.1;
+  overflow: hidden;
+  background: #1a120c;
+}
+
+.blouse-table-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.blouse-item-card:hover .blouse-table-photo {
+  transform: scale(1.03);
+}
+
+.blouse-finish-chip {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(43, 12, 30, 0.78);
+  color: #f7e6c4;
+  font-size: 0.58rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.blouse-card-info {
+  padding: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.blouse-cat-tag {
+  font-family: 'Cinzel', serif;
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+  color: #8c6020;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.blouse-item-name {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1f1f1f;
+  margin: 0 0 0.3rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.blouse-item-fabric {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  color: #666;
+  margin: 0 0 0.75rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.blouse-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.blouse-price-cluster {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.current-price {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #2b0c1e;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.was-price {
+  font-size: 0.72rem;
+  color: #888;
+  text-decoration: line-through;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.blouse-quick-book-btn {
+  background: #f7ede1;
+  color: #4a0e2d;
+  border: 1px solid rgba(198, 146, 62, 0.4);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.32rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.blouse-quick-book-btn:hover {
+  background: #4a0e2d;
+  color: #f7e6c4;
+  border-color: #4a0e2d;
+}
+
+/* Custom Tailoring Ribbon Banner */
+.blouse-tailoring-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  background: linear-gradient(135deg, #2b0c1e 0%, #17040f 100%);
+  border: 1px solid rgba(223, 183, 108, 0.3);
+  padding: 1.25rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(43, 12, 30, 0.16);
+}
+
+.tailoring-strip-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(223, 183, 108, 0.15);
+  color: #dfb76c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tailoring-strip-content {
+  flex-grow: 1;
+}
+
+.tailoring-strip-content strong {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: #f7e6c4;
+  margin-bottom: 0.2rem;
+}
+
+.tailoring-strip-content p {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.84rem;
+  color: #d1b8c8;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.tailoring-strip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: linear-gradient(135deg, #dfb76c 0%, #c6923e 100%);
+  color: #240313;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.65rem 1.4rem;
+  border-radius: 25px;
+  text-decoration: none;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(223, 183, 108, 0.35);
+  transition: all 0.25s ease;
+}
+
+.tailoring-strip-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(223, 183, 108, 0.5);
+}
+
+/* =========================================================
+   BLOUSE SECTION RESPONSIVENESS (iPad, Tablets, Mobile)
+   ========================================================= */
+
+@media (max-width: 1024px) {
+  .blouse-section {
+    padding: 4.5rem 1.5rem 5rem;
+  }
+  .blouse-showcase-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .blouse-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .blouse-cards-grid.full-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .blouse-title {
+    font-size: 1.85rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .blouse-cards-grid,
+  .blouse-cards-grid.full-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.85rem;
+  }
+  .blouse-tailoring-strip {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    padding: 1.25rem 1rem;
+  }
+  .tailoring-strip-icon {
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 540px) {
+  .blouse-section {
+    padding: 3.5rem 1rem 4rem;
+  }
+  .blouse-title {
+    font-size: 1.45rem;
+  }
+  .blouse-subtitle {
+    font-size: 0.82rem;
+  }
+  .blouse-filter-btn {
+    font-size: 0.7rem;
+    padding: 0.38rem 0.85rem;
+  }
+  .blouse-spotlight-info {
+    padding: 1.1rem;
+  }
+  .blouse-spotlight-title {
+    font-size: 1.15rem;
+  }
+  .blouse-cards-grid,
+  .blouse-cards-grid.full-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+  }
+  .blouse-card-info {
+    padding: 0.75rem 0.5rem;
+  }
+  .blouse-item-name {
+    font-size: 0.78rem;
+  }
+  .blouse-item-fabric {
+    font-size: 0.68rem;
+  }
+  .current-price {
+    font-size: 0.82rem;
+  }
+  .blouse-quick-book-btn {
+    font-size: 0.62rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* =========================================================
+   CUSTOMER REVIEWS SECTION ("The real voices from the happy faces")
+   ========================================================= */
+
+.reviews-section {
+  position: relative;
+  width: 100%;
+  padding: 3.5rem 2rem 4rem;
+  background: radial-gradient(ellipse at 50% 10%, rgba(223, 183, 108, 0.22) 0%, transparent 65%),
+              linear-gradient(180deg, #faf5ec 0%, #fefcf9 40%, #f5ece0 100%);
+  border-top: 1px solid rgba(198, 146, 62, 0.35);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.reviews-container {
+  max-width: 1380px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Header */
+.reviews-header {
+  text-align: center;
+  max-width: 780px;
+  margin: 0 auto 2rem;
+}
+
+.reviews-eyebrow-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.reviews-ornament {
+  color: #c6923e;
+  font-size: 0.9rem;
+}
+
+.reviews-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #7a3e08;
+  font-weight: 700;
+}
+
+.reviews-tagline {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #8c4a10;
+  margin: 0.35rem 0 0.5rem;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(140, 74, 16, 0.12);
+}
+
+.reviews-title {
+  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-size: 2.35rem;
+  font-weight: 900;
+  color: #1f0312;
+  letter-spacing: 0.08em;
+  margin: 0 0 1.25rem;
+  text-transform: uppercase;
+}
+
+.reviews-rating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: #ffffff;
+  padding: 0.5rem 1.4rem;
+  border-radius: 35px;
+  border: 1.5px solid #c6923e;
+  box-shadow: 0 6px 20px rgba(198, 146, 62, 0.2);
+}
+
+.reviews-rating-pill .stars {
+  color: #d97706;
+  font-size: 1.15rem;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+}
+
+.reviews-rating-pill .rating-score {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #1f0312;
+}
+
+.reviews-rating-pill .rating-divider {
+  color: #c4a47c;
+  font-size: 0.85rem;
+}
+
+.reviews-rating-pill .verified-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  color: #2b0c1e;
+  font-weight: 600;
+}
+
+/* Single Row Slider Wrapper with Side Gutters */
+.reviews-slider-wrap {
+  position: relative;
+  width: 100%;
+  padding: 0 3.25rem;
+  box-sizing: border-box;
+}
+
+/* Single Row Sliding Track */
+.reviews-slider-track {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  gap: 1.5rem;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0.75rem 0.25rem 1.5rem;
+  align-items: stretch;
+}
+
+.reviews-slider-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Single Row Card Architecture - Uniform Height & Elegant Alignment */
+.review-card {
+  flex: 0 0 380px;
+  min-width: 380px;
+  max-width: 380px;
+  height: 330px;
+  scroll-snap-align: start;
+  background: #ffffff;
+  border: 1.5px solid #d4a359;
+  border-radius: 16px;
+  padding: 1.65rem 1.75rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 10px 30px rgba(43, 12, 30, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+  box-sizing: border-box;
+}
+
+.review-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(43, 12, 30, 0.16);
+  border-color: #995517;
+}
+
+.review-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+
+.review-stars-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.review-stars {
+  color: #d97706;
+  font-size: 1.15rem;
+  letter-spacing: 0.16em;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(217, 119, 6, 0.25);
+}
+
+.review-card-tag {
+  display: inline-block;
+  font-family: 'Cinzel', serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: #6d3505;
+  text-transform: uppercase;
+  font-weight: 700;
+  background: #fbf0dc;
+  border: 1px solid #dcb26e;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.review-quote-icon {
+  font-family: 'Playfair Display', serif;
+  font-size: 3.2rem;
+  line-height: 0.75;
+  color: #c6923e;
+  opacity: 0.85;
+  font-weight: 900;
+  user-select: none;
+}
+
+/* Uniform Review Text Area with perfect alignment */
+.review-text-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow-y: auto;
+  scrollbar-width: none;
+  margin: 0.25rem 0 0.85rem;
+  padding-right: 2px;
+}
+
+.review-text-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.review-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.93rem;
+  font-weight: 550;
+  color: #1a0512;
+  line-height: 1.62;
+  margin: 0;
+  font-style: normal;
+}
+
+/* Bottom Profile Alignment */
+.reviewer-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1.5px solid rgba(198, 146, 62, 0.22);
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.reviewer-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3d0724 0%, #68113b 100%);
+  color: #ffe6a3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  font-family: 'Montserrat', sans-serif;
+  box-shadow: 0 4px 12px rgba(61, 7, 36, 0.25);
+  flex-shrink: 0;
+  border: 2px solid #dfb76c;
+}
+
+.reviewer-details {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.reviewer-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #16030e;
+  margin: 0 0 0.15rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.reviewer-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.verified-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #047857;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.reviewer-status {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  color: #047857;
+  font-weight: 700;
+}
+
+/* Floating Navigation Controls - Outside the card content */
+.reviews-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid #c6923e;
+  color: #4a0e2d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reviews-nav-btn:hover {
+  background: #4a0e2d;
+  color: #f7e6c4;
+  border-color: #dfb76c;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.reviews-nav-prev {
+  left: 0;
+}
+
+.reviews-nav-next {
+  right: 0;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .reviews-section {
+    padding: 4.5rem 1.5rem 5rem;
+  }
+  .reviews-slider-wrap {
+    padding: 0 2.75rem;
+  }
+  .review-card {
+    flex: 0 0 340px;
+    min-width: 340px;
+    max-width: 340px;
+    height: 330px;
+    padding: 1.5rem 1.4rem 1.25rem;
+  }
+  .reviews-title {
+    font-size: 1.95rem;
+  }
+  .reviews-tagline {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .reviews-slider-wrap {
+    padding: 0 2.25rem;
+  }
+  .reviews-nav-btn {
+    width: 36px;
+    height: 36px;
+  }
+  .reviews-nav-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  .review-card {
+    flex: 0 0 300px;
+    min-width: 300px;
+    max-width: 300px;
+    height: 330px;
+  }
+}
+
+@media (max-width: 520px) {
+  .reviews-section {
+    padding: 3.5rem 0.75rem 4rem;
+  }
+  .reviews-slider-wrap {
+    padding: 0 1.85rem;
+  }
+  .reviews-header {
+    margin-bottom: 2rem;
+  }
+  .reviews-title {
+    font-size: 1.5rem;
+  }
+  .reviews-tagline {
+    font-size: 1.15rem;
+  }
+  .review-card {
+    flex: 0 0 280px;
+    min-width: 280px;
+    max-width: 280px;
+    height: 340px;
+    padding: 1.35rem 1.2rem 1.15rem;
+  }
+  .review-text {
+    font-size: 0.88rem;
+  }
+  .reviewer-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+  }
+  .reviewer-name {
+    font-size: 1rem;
+  }
+  .reviews-nav-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .reviews-nav-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+

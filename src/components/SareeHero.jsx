@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import './SareeHero.css';
+import './components.css';
 
 const sarees = [
   {
@@ -9,7 +9,9 @@ const sarees = [
     subtitle: 'Dola Silk • Kanchipuram • Banarasi • Pure Silk',
     tag: 'Premium Collection',
     fabric: 'Elegant Silk Weaves',
-    duration: '0:16'
+    duration: '0:16',
+    subheadline: 'Pure Kanchipuram, Banarasi & Dola Silk',
+    description: 'Experience regal grace with our authentic silk collection, hand-woven with shimmering zari borders and time-honored heritage motifs.'
   },
   {
     id: 2,
@@ -18,7 +20,9 @@ const sarees = [
     subtitle: 'Soft Cotton • Mulmul • Kota • Lightweight Weaves',
     tag: 'Everyday Elegance',
     fabric: 'Premium Cotton',
-    duration: '0:18'
+    duration: '0:18',
+    subheadline: 'Breathable Mulmul, Kota & Lightweight Weaves',
+    description: 'Embrace effortless charm and daily comfort with our ultra-soft cotton sarees, crafted for breezy, all-day sophistication.'
   },
   {
     id: 3,
@@ -27,7 +31,9 @@ const sarees = [
     subtitle: 'Bridal Pattu • Kanjivaram • Temple Zari • Festive Weaves',
     tag: 'Bridal Collection',
     fabric: 'Pure Pattu Silk',
-    duration: '0:14'
+    duration: '0:14',
+    subheadline: 'Sacred Temple Zari & Festive Bridal Drapes',
+    description: 'Celebrate your most auspicious moments in majestic South Indian bridal pattu drapes woven to royal perfection.'
   },
   {
     id: 4,
@@ -36,7 +42,9 @@ const sarees = [
     subtitle: 'Modern Drapes • Statement Borders • Party Wear • Luxury Styles',
     tag: 'Trending Now',
     fabric: 'Designer Collection',
-    duration: '0:20'
+    duration: '0:20',
+    subheadline: 'Contemporary Silhouettes & Statement Borders',
+    description: 'Make an unforgettable entrance with our high-fashion designer drapes featuring exquisite embellishments and modern glamour.'
   },
   {
     id: 5,
@@ -45,7 +53,9 @@ const sarees = [
     subtitle: 'Floral Prints • Digital Prints • Contemporary Patterns • Elegant Drapes',
     tag: 'New Arrivals',
     fabric: 'Premium Printed Fabrics',
-    duration: '0:15'
+    duration: '0:15',
+    subheadline: 'Floral Prints, Digital Art & Contemporary Motifs',
+    description: 'Infuse artistic flair into your wardrobe with breezy printed sarees boasting expressive color palettes and lightweight luxury.'
   },
   {
     id: 6,
@@ -54,7 +64,9 @@ const sarees = [
     subtitle: 'Traditional Weaves • Artisan Craft • Heritage Designs • Natural Textures',
     tag: 'Heritage Edit',
     fabric: 'Authentic Handloom',
-    duration: '0:17'
+    duration: '0:17',
+    subheadline: 'Artisanal Craftsmanship & Heritage Textures',
+    description: 'Cherish timeless hand-woven artistry passed down generations, honoring indigenous weavers and natural organic textures.'
   }
 ];
 
@@ -108,11 +120,26 @@ const categoryPills = [
 
 export default function SareeHero() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [displayIndex, setDisplayIndex] = useState(0);
+  const [isExiting, setIsExiting] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const touchStartXRef = useRef(0);
   const touchEndXRef = useRef(0);
   const totalSarees = sarees.length;
+
+  // Synchronize dynamic text with active carousel slide
+  useEffect(() => {
+    if (currentIndex === displayIndex) return;
+
+    setIsExiting(true);
+    const timer = setTimeout(() => {
+      setDisplayIndex(currentIndex);
+      setIsExiting(false);
+    }, 180);
+
+    return () => clearTimeout(timer);
+  }, [currentIndex, displayIndex]);
 
   // Preload all high-res images to guarantee zero-latency transitions
   useEffect(() => {
@@ -297,10 +324,60 @@ export default function SareeHero() {
     }
   };
 
-  const activeSaree = sarees[currentIndex];
+  const activeSaree = sarees[displayIndex] || sarees[0];
+
+  const renderAnimatedLetters = (title) => {
+    let charCounter = 0;
+    const words = title.split(' ');
+
+    return words.map((word, wordIdx) => {
+      const letters = word.split('');
+      return (
+        <span key={`${displayIndex}-w-${wordIdx}`} className="saree-title-word" aria-hidden="true">
+          {letters.map((char, charIdx) => {
+            const delay = (charCounter * 0.04).toFixed(3);
+            charCounter++;
+            return (
+              <span
+                key={`${displayIndex}-c-${wordIdx}-${charIdx}`}
+                className="saree-letter-char"
+                style={{ animationDelay: `${delay}s` }}
+              >
+                {char}
+              </span>
+            );
+          })}
+          {wordIdx < words.length - 1 && (
+            <span className="saree-word-spacer">&nbsp;</span>
+          )}
+        </span>
+      );
+    });
+  };
+
+  const getPillTargetIndex = (id) => {
+    switch (id) {
+      case 'silk': return 0;
+      case 'designer': return 3;
+      case 'party': return 4;
+      case 'traditional': return 2;
+      default: return 0;
+    }
+  };
+
+  const isCategoryActive = (id) => {
+    switch (id) {
+      case 'silk': return displayIndex === 0;
+      case 'designer': return displayIndex === 3;
+      case 'party': return displayIndex === 4;
+      case 'traditional': return displayIndex === 2 || displayIndex === 5;
+      default: return false;
+    }
+  };
 
   return (
     <section
+      id="home"
       className="saree-hero-section"
       aria-label="Saree Collection Showcase"
       onKeyDown={handleKeyDown}
@@ -318,34 +395,43 @@ export default function SareeHero() {
             ========================================= */}
         <div className="saree-hero-content-col">
           {/* Intro Header Group */}
-          <div className="saree-hero-intro">
+          <div className={`saree-hero-intro ${isExiting ? 'is-exiting' : 'is-entering'}`}>
             {/* Eyebrow Label */}
             <div className="saree-eyebrow-wrapper">
               <span className="saree-eyebrow-accent-line" />
-              <span className="saree-eyebrow-text">TIMELESS ELEGANCE</span>
+              <span className="saree-eyebrow-text">
+                {activeSaree.tag.toUpperCase()}
+              </span>
               <span className="saree-eyebrow-accent-line" />
             </div>
 
-            {/* Main Headline */}
-            <h1 className="saree-hero-headline">
-              Grace in Every Drape
+            {/* Main Headline with Letter-by-Letter Flow Animation */}
+            <h1 className="saree-hero-headline" aria-label={activeSaree.title}>
+              {renderAnimatedLetters(activeSaree.title)}
             </h1>
 
             {/* Supporting Headline */}
             <h2 className="saree-hero-subheadline">
-              Discover Sarees Made for Every Occasion
+              {activeSaree.subheadline}
             </h2>
 
             {/* Short Description / Tagline */}
             <p className="saree-hero-description">
-              Explore our curated collection of designer, silk, festive and traditional sarees crafted to make every moment memorable.
+              {activeSaree.description}
             </p>
           </div>
 
           {/* Category Highlight Badges */}
           <div className="saree-category-pill-grid">
             {categoryPills.map((cat) => (
-              <div key={cat.id} className="saree-category-pill-item">
+              <div
+                key={cat.id}
+                className={`saree-category-pill-item ${isCategoryActive(cat.id) ? 'is-active-pill' : ''}`}
+                onClick={() => setCurrentIndex(getPillTargetIndex(cat.id))}
+                role="button"
+                tabIndex={0}
+                aria-label={`View ${cat.label}`}
+              >
                 <div className="saree-category-pill-icon">
                   {cat.icon}
                 </div>

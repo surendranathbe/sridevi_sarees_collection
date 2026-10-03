@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import logoImg from '../assets/logo_2.png';
-import './Navbar.css';
+import './components.css';
 
-const Navbar = () => {
+const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState('Home');
+  const [selectedNav, setSelectedNav] = useState('Home');
   const [cartCount, setCartCount] = useState(2);
+
+  const activeItem =
+    currentView === 'about' ? 'About Us' : currentView === 'contact' ? 'Contact Us' : selectedNav;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,16 +31,34 @@ const Navbar = () => {
   ];
 
   const rightNavItems = [
-    { label: 'Embroidery Designs', href: '#embroidery-designs' },
+    { label: 'Embroidery Designs', href: '#our-blouse-collection' },
     { label: 'Latest Collections', href: '#latest-collections' },
     { label: 'Contact Us', href: '#contact-us' },
   ];
 
   const allNavItems = [...leftNavItems, ...rightNavItems];
 
-  const handleNavClick = (label, href) => {
-    setActiveItem(label);
+  const handleNavClick = (arg1, arg2, arg3) => {
+    let label = '';
+    let href = '';
+    if (arg1 && typeof arg1 === 'object' && arg1.preventDefault) {
+      arg1.preventDefault();
+      label = arg2;
+      href = arg3;
+    } else {
+      label = arg1;
+      href = arg2;
+    }
+    setSelectedNav(label);
     setMobileMenuOpen(false);
+
+    if (label === 'About Us' || href === '#about-us') {
+      onNavigate('about');
+    } else if (label === 'Contact Us' || href === '#contact-us') {
+      onNavigate('contact');
+    } else {
+      onNavigate('home', href);
+    }
   };
 
   return (
