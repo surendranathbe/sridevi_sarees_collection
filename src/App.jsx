@@ -4,6 +4,8 @@ import SareeHero from './components/SareeHero';
 import Footer from './components/Footer';
 import AboutPage from './components/AboutPage';
 import ContactUs from './components/ContactUs';
+import AdminLogin from './admindashboard/AdminLogin';
+import AdminDashboard from './admindashboard/AdminDashboard';
 import silkBanner from './assets/silk-sarees-banner1.png';
 import pattuBanner from './assets/pattu-saree-banner1.png';
 import designerBanner from './assets/desginer_sarees-banner1.png';
@@ -298,9 +300,12 @@ const occasions = [
 
 function App() {
   const [currentView, setCurrentView] = useState(() => {
-    const hash = typeof window !== 'undefined' ? window.location.hash : '';
-    if (hash === '#about-us' || hash === '#/about-us' || hash === '#about') return 'about';
-    if (hash === '#contact-us' || hash === '#/contact-us' || hash === '#contact') return 'contact';
+    const hash = typeof window !== 'undefined' ? window.location.hash.toLowerCase() : '';
+    const path = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
+    if (hash === '#admin-login' || hash === '#/admin-login' || hash === '#admin' || path === '/admin-login' || path === '/admin') return 'admin-login';
+    if (hash === '#admin-dashboard' || hash === '#/admin-dashboard' || hash === '#dashboard' || path === '/admin-dashboard' || path === '/dashboard') return 'admin-dashboard';
+    if (hash === '#about-us' || hash === '#/about-us' || hash === '#about' || path === '/about-us' || path === '/about') return 'about';
+    if (hash === '#contact-us' || hash === '#/contact-us' || hash === '#contact' || path === '/contact-us' || path === '/contact') return 'contact';
     return 'home';
   });
   const [selectedDrapeId, setSelectedDrapeId] = useState('pattu');
@@ -317,10 +322,15 @@ function App() {
 
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash;
-      if (hash === '#about-us' || hash === '#/about-us' || hash === '#about') {
+      const hash = typeof window !== 'undefined' ? window.location.hash.toLowerCase() : '';
+      const path = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
+      if (hash === '#admin-login' || hash === '#/admin-login' || hash === '#admin' || path === '/admin-login' || path === '/admin') {
+        setCurrentView('admin-login');
+      } else if (hash === '#admin-dashboard' || hash === '#/admin-dashboard' || hash === '#dashboard' || path === '/admin-dashboard' || path === '/dashboard') {
+        setCurrentView('admin-dashboard');
+      } else if (hash === '#about-us' || hash === '#/about-us' || hash === '#about' || path === '/about-us' || path === '/about') {
         setCurrentView('about');
-      } else if (hash === '#contact-us' || hash === '#/contact-us' || hash === '#contact') {
+      } else if (hash === '#contact-us' || hash === '#/contact-us' || hash === '#contact' || path === '/contact-us' || path === '/contact') {
         setCurrentView('contact');
       } else {
         setCurrentView('home');
@@ -328,7 +338,11 @@ function App() {
     };
 
     window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('popstate', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('popstate', handleHashChange);
+    };
   }, []);
 
   const handleNavigate = (view, targetHref = null) => {
@@ -456,6 +470,14 @@ function App() {
       aboutRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  if (currentView === 'admin-login') {
+    return <AdminLogin />;
+  }
+
+  if (currentView === 'admin-dashboard') {
+    return <AdminDashboard />;
+  }
 
   return (
     <div className="app-container">
