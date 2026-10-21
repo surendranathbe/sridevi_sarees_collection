@@ -29,8 +29,8 @@ const SIDEBAR_NAV_ITEMS = [
     )
   },
   {
-    id: 'embroidery-designs',
-    name: 'Embroidery Designs',
+    id: 'embroidery-services',
+    name: 'Embroidery Services',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="6" cy="6" r="3" />
@@ -111,8 +111,16 @@ const SIDEBAR_NAV_ITEMS = [
   }
 ];
 
-const AdminDashboard = () => {
-  // Navigation & responsive drawer states
+const AdminDashboard = ({ onNavigate, onLogout }) => {
+  // Current authenticated admin profile from localStorage
+  const currentAdmin = React.useMemo(() => {
+    try {
+      const stored = localStorage.getItem('adminUser');
+      return stored ? JSON.parse(stored) : { email: 'admin@sridevisarees.com', name: 'Administrator' };
+    } catch {
+      return { email: 'admin@sridevisarees.com', name: 'Administrator' };
+    }
+  }, []);
   const [activeNav, setActiveNav] = useState('Dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -331,7 +339,15 @@ const AdminDashboard = () => {
                 <span className="admin-online-dot" /> Online
               </span>
             </div>
-            <a href="#home" className="admin-sidebar-store-link">
+            <a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                if (onNavigate) onNavigate('home');
+                else window.location.href = '/';
+              }}
+              className="admin-sidebar-store-link"
+            >
               <span>View Customer Store</span>
               <span>→</span>
             </a>
@@ -391,13 +407,65 @@ const AdminDashboard = () => {
               <span>Super Admin</span>
             </div>
 
+            <button
+              type="button"
+              className="admin-role-pill"
+              style={{
+                cursor: 'pointer',
+                background: 'rgba(92, 17, 39, 0.06)',
+                border: '1px solid rgba(92, 17, 39, 0.18)',
+                color: 'var(--admin-wine-main)'
+              }}
+              onClick={() => {
+                if (onNavigate) onNavigate('home');
+                else window.location.href = '/';
+              }}
+              title="Return to customer store"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+              <span>Storefront</span>
+            </button>
+
             <div className="admin-user-info">
               <span className="admin-online-dot" />
-              <span>admin@sridevisarees.com</span>
+              <span>{currentAdmin.email || 'admin@sridevisarees.com'}</span>
             </div>
 
-            <div className="admin-avatar-circle" title="Administrator">
-              A
+            <button
+              type="button"
+              className="admin-role-pill"
+              style={{
+                cursor: 'pointer',
+                background: 'rgba(220, 53, 69, 0.08)',
+                border: '1px solid rgba(220, 53, 69, 0.25)',
+                color: '#b02a37'
+              }}
+              onClick={() => {
+                if (onLogout) {
+                  onLogout();
+                } else {
+                  localStorage.removeItem('adminToken');
+                  localStorage.removeItem('adminUser');
+                  if (onNavigate) onNavigate('admin-login');
+                  else window.location.href = '/admin';
+                }
+              }}
+              title="Sign Out of Admin Console"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span>Logout</span>
+            </button>
+
+            <div className="admin-avatar-circle" title={currentAdmin.name || 'Administrator'}>
+              {(currentAdmin.name ? currentAdmin.name.charAt(0) : 'A').toUpperCase()}
             </div>
           </div>
         </header>
@@ -633,7 +701,7 @@ const AdminDashboard = () => {
                     <button
                       type="button"
                       className="admin-quick-action-card admin-qa-purple"
-                      onClick={() => setActiveNav('Embroidery Designs')}
+                      onClick={() => setActiveNav('Embroidery Services')}
                     >
                       <div className="admin-qa-icon">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -820,7 +888,7 @@ const AdminDashboard = () => {
               setProductsList={setProductsList}
               setNotification={setNotification}
             />
-          ) : activeNav === 'Embroidery Designs' || activeNav === 'Embroidery Services' ? (
+          ) : activeNav === 'Embroidery Services' || activeNav === 'Embroidery Designs' ? (
             /* =========================================================
                VIEW 3: EMBROIDERY DESIGNS MODULE (via EmbroideryServices.jsx)
                ========================================================= */

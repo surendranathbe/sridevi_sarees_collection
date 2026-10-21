@@ -276,12 +276,13 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </button>
 
-          {/* Profile Icon */}
+          {/* Profile / Admin Console Icon */}
           <button
             type="button"
             className="nav-icon-btn mobile-profile-btn"
-            aria-label="User Account Profile"
-            title="My Account"
+            aria-label="Admin Management Portal"
+            title="Admin Console"
+            onClick={() => onNavigate('admin-login')}
           >
             <svg
               className="nav-svg-icon"
@@ -392,7 +393,14 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
                 <span>Shopping Cart</span>
               </button>
 
-              <button type="button" className="mobile-action-card">
+              <button
+                type="button"
+                className="mobile-action-card"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onNavigate('admin-login');
+                }}
+              >
                 <div className="mobile-card-icon-wrap">
                   <svg
                     width="18"
@@ -406,7 +414,7 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                 </div>
-                <span>My Profile</span>
+                <span>Admin Login</span>
               </button>
             </div>
           </div>

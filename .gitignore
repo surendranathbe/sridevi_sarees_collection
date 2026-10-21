@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment and Secrets (Never commit secrets)
+.env
+.env*.local
+*.env
+application-local.properties
+application-secrets.properties
+backend/.env
+backend/.env*.local
+backend/target/

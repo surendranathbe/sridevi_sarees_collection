@@ -298,15 +298,54 @@ const occasions = [
   }
 ];
 
+const parseViewFromLocation = () => {
+  if (typeof window === 'undefined') return 'home';
+  const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
+  const hash = window.location.hash.toLowerCase().replace(/\/+$/, '') || '';
+
+  // 1. Admin Dashboard routes (/admindashboard)
+  const dashboardPaths = ['/admindashboard', '/admin/dashboard', '/admin-dashboard', '/dashboard'];
+  const dashboardHashes = ['#admindashboard', '#admin-dashboard', '#/admin-dashboard', '#/admin/dashboard'];
+  if (dashboardPaths.includes(path) || dashboardHashes.includes(hash)) {
+    return 'admin-dashboard';
+  }
+
+  // 2. Admin Login routes (/admin)
+  const loginPaths = ['/admin', '/admin-login', '/admin/login'];
+  const loginHashes = ['#admin', '#admin-login', '#/admin-login', '#/admin/login'];
+  if (loginPaths.includes(path) || loginHashes.includes(hash)) {
+    return 'admin-login';
+  }
+
+  // About Us routes
+  if (
+    path === '/about-us' ||
+    path === '/about' ||
+    hash === '#about-us' ||
+    hash === '#/about-us' ||
+    hash === '#about'
+  ) {
+    return 'about';
+  }
+
+  // Contact Us routes
+  if (
+    path === '/contact-us' ||
+    path === '/contact' ||
+    hash === '#contact-us' ||
+    hash === '#/contact-us' ||
+    hash === '#contact'
+  ) {
+    return 'contact';
+  }
+
+  return 'home';
+};
+
 function App() {
-  const [currentView, setCurrentView] = useState(() => {
-    const hash = typeof window !== 'undefined' ? window.location.hash.toLowerCase() : '';
-    const path = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
-    if (hash === '#admin-login' || hash === '#/admin-login' || hash === '#admin' || path === '/admin-login' || path === '/admin') return 'admin-login';
-    if (hash === '#admin-dashboard' || hash === '#/admin-dashboard' || hash === '#dashboard' || path === '/admin-dashboard' || path === '/dashboard') return 'admin-dashboard';
-    if (hash === '#about-us' || hash === '#/about-us' || hash === '#about' || path === '/about-us' || path === '/about') return 'about';
-    if (hash === '#contact-us' || hash === '#/contact-us' || hash === '#contact' || path === '/contact-us' || path === '/contact') return 'contact';
-    return 'home';
+  const [currentView, setCurrentView] = useState(() => parseViewFromLocation());
+  const [authToken, setAuthToken] = useState(() => {
+    return typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
   });
   const [selectedDrapeId, setSelectedDrapeId] = useState('pattu');
   const [isInView, setIsInView] = useState(true);
@@ -321,38 +360,62 @@ function App() {
   const activeDrape = featuredDrapes.find((d) => d.id === selectedDrapeId) || featuredDrapes[0];
 
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = typeof window !== 'undefined' ? window.location.hash.toLowerCase() : '';
-      const path = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
-      if (hash === '#admin-login' || hash === '#/admin-login' || hash === '#admin' || path === '/admin-login' || path === '/admin') {
-        setCurrentView('admin-login');
-      } else if (hash === '#admin-dashboard' || hash === '#/admin-dashboard' || hash === '#dashboard' || path === '/admin-dashboard' || path === '/dashboard') {
-        setCurrentView('admin-dashboard');
-      } else if (hash === '#about-us' || hash === '#/about-us' || hash === '#about' || path === '/about-us' || path === '/about') {
-        setCurrentView('about');
-      } else if (hash === '#contact-us' || hash === '#/contact-us' || hash === '#contact' || path === '/contact-us' || path === '/contact') {
-        setCurrentView('contact');
-      } else {
-        setCurrentView('home');
-      }
+    const handleLocationChange = () => {
+      setCurrentView(parseViewFromLocation());
+      setAuthToken(typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null);
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    window.addEventListener('popstate', handleHashChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    window.addEventListener('popstate', handleLocationChange);
     return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-      window.removeEventListener('popstate', handleHashChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+      window.removeEventListener('popstate', handleLocationChange);
     };
   }, []);
+
+  const handleLoginSuccess = (token) => {
+    const activeToken = token || (typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null);
+    setAuthToken(activeToken);
+    setCurrentView('admin-dashboard');
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', '/admindashboard');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleNavigate = (view, targetHref = null) => {
     if (view === 'about') {
       setCurrentView('about');
-      window.location.hash = '#about-us';
+      if (typeof window !== 'undefined') {
+        window.history.pushState({}, '', '/about-us');
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (view === 'contact') {
       setCurrentView('contact');
-      window.location.hash = '#contact-us';
+      if (typeof window !== 'undefined') {
+        window.history.pushState({}, '', '/contact-us');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (view === 'admin-dashboard') {
+      const activeToken = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
+      setAuthToken(activeToken);
+      if (!activeToken) {
+        setCurrentView('admin-login');
+        if (typeof window !== 'undefined') {
+          window.history.pushState({}, '', '/admin');
+        }
+      } else {
+        setCurrentView('admin-dashboard');
+        if (typeof window !== 'undefined') {
+          window.history.pushState({}, '', '/admindashboard');
+        }
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (view === 'admin-login') {
+      setCurrentView('admin-login');
+      if (typeof window !== 'undefined') {
+        window.history.pushState({}, '', '/admin');
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       setCurrentView('home');
@@ -363,7 +426,9 @@ function App() {
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         }, 60);
       } else {
-        window.location.hash = '#home';
+        if (typeof window !== 'undefined') {
+          window.history.pushState({}, '', '/');
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
@@ -472,11 +537,46 @@ function App() {
   };
 
   if (currentView === 'admin-login') {
-    return <AdminLogin />;
+    if (typeof window !== 'undefined' && (window.location.pathname !== '/admin' || window.location.hash)) {
+      window.history.replaceState({}, '', '/admin');
+    }
+    return (
+      <AdminLogin
+        onLoginSuccess={handleLoginSuccess}
+        onNavigate={handleNavigate}
+      />
+    );
   }
 
   if (currentView === 'admin-dashboard') {
-    return <AdminDashboard />;
+    if (!authToken) {
+      if (typeof window !== 'undefined' && (window.location.pathname !== '/admin' || window.location.hash)) {
+        window.history.replaceState({}, '', '/admin');
+      }
+      return (
+        <AdminLogin
+          onLoginSuccess={handleLoginSuccess}
+          onNavigate={handleNavigate}
+          authError="Access Denied: Please sign in with administrator credentials to view the dashboard."
+        />
+      );
+    }
+
+    if (typeof window !== 'undefined' && (window.location.pathname !== '/admindashboard' || window.location.hash)) {
+      window.history.replaceState({}, '', '/admindashboard');
+    }
+
+    return (
+      <AdminDashboard
+        onNavigate={handleNavigate}
+        onLogout={() => {
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('adminUser');
+          setAuthToken(null);
+          handleNavigate('admin-login');
+        }}
+      />
+    );
   }
 
   return (
