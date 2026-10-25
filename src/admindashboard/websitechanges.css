@@ -1,0 +1,1025 @@
+/**
+ * Sridevi Sarees & Collections - Website Changes & CMS Panel Styles
+ * File: src/admindashboard/websitechanges.css
+ */
+
+/* ==========================================================================
+   1. MAIN WRAPPER & CONTAINER
+   ========================================================================== */
+.website-changes-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  width: 100%;
+  animation: wcFadeIn 0.3s ease-out;
+}
+
+@keyframes wcFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   2. HERO HEADER & NOTICE
+   ========================================================================== */
+.wc-header-card {
+  background: linear-gradient(135deg, #44071d 0%, #610d2d 50%, #7d133b 100%);
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(68, 7, 29, 0.18);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.wc-header-info {
+  max-width: 680px;
+}
+
+.wc-badge-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid #d4af37;
+  color: #f7e6a5;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  margin-bottom: 0.6rem;
+}
+
+.wc-header-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.4rem 0;
+  color: #fcf9f2;
+}
+
+.wc-header-subtitle {
+  font-size: 0.92rem;
+  color: #edd9e0;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.wc-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   3. SECTION SELECTOR (10 SECTIONS)
+   ========================================================================== */
+.wc-sections-container {
+  background: #ffffff;
+  border: 1px solid #e7ded7;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.wc-sections-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid #f0eae4;
+}
+
+.wc-sections-header-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #580c29;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wc-sections-count {
+  font-size: 0.76rem;
+  color: #8c7a82;
+  font-weight: 600;
+}
+
+.wc-section-tabs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.75rem;
+}
+
+.wc-section-card {
+  position: relative;
+  background: #fdfbf9;
+  border: 1.5px solid #ebdcd3;
+  border-radius: 9px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.wc-section-card:hover {
+  border-color: #580c29;
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(88, 12, 41, 0.08);
+}
+
+.wc-section-card.is-active {
+  background: #fff8f5;
+  border-color: #580c29;
+  box-shadow: 0 0 0 2px rgba(88, 12, 41, 0.15), 0 4px 14px rgba(88, 12, 41, 0.09);
+}
+
+.wc-section-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.2rem;
+}
+
+.wc-section-icon {
+  font-size: 1.25rem;
+}
+
+.wc-section-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.18rem 0.48rem;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.wc-section-badge.is-implemented {
+  background: #e6f7ec;
+  color: #0f763e;
+  border: 1px solid #a3e0b8;
+}
+
+.wc-section-badge.is-coming-soon {
+  background: #f3f0ec;
+  color: #7b6d73;
+  border: 1px solid #dcd3cb;
+}
+
+.wc-section-card-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #2e1820;
+  margin: 0;
+}
+
+.wc-section-card.is-active .wc-section-card-title {
+  color: #580c29;
+}
+
+.wc-section-card-desc {
+  font-size: 0.74rem;
+  color: #7b6d73;
+  margin: 0;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   4. TWO-COLUMN WORKSPACE: EDITOR ON LEFT, PREVIEW ON RIGHT
+   ========================================================================== */
+.wc-workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .wc-workspace-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   5. EDITOR FORM & SECTIONS
+   ========================================================================== */
+.wc-editor-card {
+  background: #ffffff;
+  border: 1px solid #e7ded7;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.wc-editor-header {
+  background: #fcf9f6;
+  border-bottom: 1px solid #ebe2da;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.wc-editor-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.wc-editor-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #40061c;
+  margin: 0;
+  font-family: 'Cinzel', serif;
+}
+
+.wc-status-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.wc-status-pill.is-draft {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.wc-status-pill.is-published {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.wc-editor-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Form Groups & Fieldsets */
+.wc-field-section {
+  border: 1px solid #f0e6de;
+  border-radius: 9px;
+  padding: 1.25rem;
+  background: #fdfbf9;
+}
+
+.wc-field-section-legend {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #580c29;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #f0e6de;
+}
+
+.wc-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+  .wc-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wc-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.wc-form-group:last-child {
+  margin-bottom: 0;
+}
+
+.wc-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #3b2c34;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wc-label-req {
+  color: #dc2626;
+  margin-left: 2px;
+}
+
+.wc-label-hint {
+  font-size: 0.72rem;
+  color: #8c7a82;
+  font-weight: 400;
+}
+
+.wc-input,
+.wc-textarea,
+.wc-select {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1.5px solid #d9cbbf;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #1f171b;
+  font-size: 0.88rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.wc-input:focus,
+.wc-textarea:focus,
+.wc-select:focus {
+  outline: none;
+  border-color: #580c29;
+  box-shadow: 0 0 0 3px rgba(88, 12, 41, 0.12);
+}
+
+.wc-input.has-error,
+.wc-textarea.has-error {
+  border-color: #dc2626;
+  background: #fff8f8;
+}
+
+.wc-field-error {
+  font-size: 0.74rem;
+  color: #dc2626;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+/* Image Upload Area */
+.wc-upload-dropzone {
+  border: 2px dashed #cfbeb3;
+  border-radius: 9px;
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  background: #faf6f2;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.wc-upload-dropzone:hover {
+  border-color: #580c29;
+  background: #fbf0ea;
+}
+
+.wc-dropzone-icon {
+  font-size: 2rem;
+}
+
+.wc-dropzone-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #40061c;
+  margin: 0;
+}
+
+.wc-dropzone-specs {
+  font-size: 0.73rem;
+  color: #7b6d73;
+  margin: 0;
+}
+
+.wc-current-image-preview {
+  margin-top: 0.85rem;
+  border: 1px solid #ebdcd3;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  background: #111;
+}
+
+.wc-current-image-preview img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+}
+
+.wc-image-preview-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(26, 5, 13, 0.75);
+  backdrop-filter: blur(4px);
+  padding: 0.45rem 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  font-size: 0.74rem;
+}
+
+.wc-image-btn-strip {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.wc-btn-xs {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.wc-btn-xs:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.wc-btn-xs.is-danger {
+  background: rgba(220, 38, 38, 0.8);
+  border-color: #ef4444;
+}
+
+.wc-btn-xs.is-danger:hover {
+  background: #b91c1c;
+}
+
+/* Visibility Switcher */
+.wc-toggle-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border: 1px solid #ebdcd3;
+  border-radius: 8px;
+}
+
+.wc-toggle-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.wc-toggle-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #2e1820;
+}
+
+.wc-toggle-desc {
+  font-size: 0.72rem;
+  color: #7b6d73;
+}
+
+.wc-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.wc-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.wc-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #d1d5db;
+  transition: 0.3s;
+  border-radius: 34px;
+}
+
+.wc-toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .wc-toggle-slider {
+  background-color: #10b981;
+}
+
+input:checked + .wc-toggle-slider:before {
+  transform: translateX(22px);
+}
+
+/* ==========================================================================
+   6. LIVE PREVIEW PANEL (RIGHT COLUMN)
+   ========================================================================== */
+.wc-preview-card {
+  position: sticky;
+  top: 1.5rem;
+  background: #ffffff;
+  border: 1px solid #e7ded7;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.wc-preview-header {
+  background: #fbf7f4;
+  border-bottom: 1px solid #ebe2da;
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.wc-preview-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #580c29;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.wc-device-toggle {
+  display: flex;
+  background: #ece3db;
+  padding: 0.2rem;
+  border-radius: 7px;
+  gap: 0.2rem;
+}
+
+.wc-device-btn {
+  background: transparent;
+  border: none;
+  padding: 0.3rem 0.75rem;
+  border-radius: 5px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #6a5761;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s;
+}
+
+.wc-device-btn.is-active {
+  background: #ffffff;
+  color: #580c29;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.wc-preview-viewport-wrap {
+  padding: 1.25rem;
+  background: #f3ede8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 480px;
+  overflow: hidden;
+}
+
+/* Device Viewport Frames */
+.wc-viewport-desktop {
+  width: 100%;
+  max-width: 600px;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  border: 1px solid #c9b9af;
+  position: relative;
+  transition: max-width 0.3s ease;
+}
+
+.wc-viewport-mobile {
+  width: 320px;
+  max-width: 320px;
+  background: #000;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
+  border: 4px solid #2d262b;
+  position: relative;
+  transition: max-width 0.3s ease;
+}
+
+/* Live Simulation Banner Canvas */
+.wc-sim-banner {
+  position: relative;
+  width: 100%;
+  min-height: 380px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  padding: 2rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.wc-viewport-mobile .wc-sim-banner {
+  min-height: 460px;
+  padding: 1.5rem 1rem;
+  align-items: flex-end;
+}
+
+.wc-sim-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.wc-sim-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.wc-sim-tag-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.wc-sim-accent-line {
+  display: inline-block;
+  width: 18px;
+  height: 1.5px;
+  background: #d4af37;
+}
+
+.wc-sim-tag {
+  color: #f7e6a5;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.wc-sim-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-family: 'Cinzel', serif;
+  margin: 0;
+  line-height: 1.15;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+.wc-viewport-mobile .wc-sim-title {
+  font-size: 1.25rem;
+}
+
+.wc-sim-subheadline {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fce899;
+  margin: 0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.wc-sim-desc {
+  font-size: 0.78rem;
+  color: #f4ecf0;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 420px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.wc-sim-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.wc-sim-btn-primary {
+  background: linear-gradient(135deg, #d4af37 0%, #b38b1f 100%);
+  color: #2b0615;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  padding: 0.45rem 0.9rem;
+  border-radius: 4px;
+  border: none;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.wc-sim-btn-secondary {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.45rem 0.85rem;
+  border-radius: 4px;
+  cursor: default;
+}
+
+.wc-preview-footer-notice {
+  padding: 0.75rem 1.25rem;
+  background: #fdfbf9;
+  border-top: 1px solid #ebdcd3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.73rem;
+  color: #7b6d73;
+}
+
+.wc-preview-footer-link {
+  color: #580c29;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.wc-preview-footer-link:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   7. STICKY ACTION BAR & BUTTONS
+   ========================================================================== */
+.wc-action-bar {
+  background: #ffffff;
+  border: 1px solid #e7ded7;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.wc-action-left,
+.wc-action-right {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.wc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 7px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: inherit;
+}
+
+.wc-btn-primary {
+  background: linear-gradient(135deg, #580c29 0%, #7d133b 100%);
+  color: #ffffff;
+  border: 1px solid #44071d;
+  box-shadow: 0 4px 12px rgba(88, 12, 41, 0.22);
+}
+
+.wc-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #44071d 0%, #680e30 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(88, 12, 41, 0.3);
+}
+
+.wc-btn-publish {
+  background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+  color: #ffffff;
+  border: 1px solid #14532d;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+}
+
+.wc-btn-publish:hover:not(:disabled) {
+  background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35);
+}
+
+.wc-btn-secondary {
+  background: #fbf7f4;
+  color: #580c29;
+  border: 1.5px solid #dcd1c7;
+}
+
+.wc-btn-secondary:hover:not(:disabled) {
+  background: #f0e6de;
+  border-color: #bfaea2;
+}
+
+.wc-btn-outline-danger {
+  background: #ffffff;
+  color: #dc2626;
+  border: 1.5px solid #fca5a5;
+}
+
+.wc-btn-outline-danger:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.wc-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ==========================================================================
+   8. COMING SOON EMPTY STATE FOR OTHER SECTIONS
+   ========================================================================== */
+.wc-coming-soon-card {
+  background: #ffffff;
+  border: 1px solid #e7ded7;
+  border-radius: 12px;
+  padding: 3.5rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.wc-coming-soon-icon {
+  font-size: 3.2rem;
+  background: #f9f4ee;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #d8c9bc;
+}
+
+.wc-coming-soon-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #40061c;
+  margin: 0;
+  font-family: 'Cinzel', serif;
+}
+
+.wc-coming-soon-desc {
+  max-width: 520px;
+  font-size: 0.92rem;
+  color: #786b73;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.wc-coming-soon-roadmap {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.wc-roadmap-chip {
+  background: #f5eee8;
+  border: 1px solid #dfd1c5;
+  color: #635058;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+}
+
+/* ==========================================================================
+   9. MODALS & CONFIRMATION DIALOGS
+   ========================================================================== */
+.wc-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(30, 8, 17, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: wcFadeIn 0.2s ease-out;
+}
+
+.wc-modal-box {
+  background: #ffffff;
+  border-radius: 12px;
+  max-width: 480px;
+  width: 100%;
+  padding: 1.75rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid #e7ded7;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.wc-modal-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #40061c;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wc-modal-desc {
+  font-size: 0.88rem;
+  color: #55444d;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.wc-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}

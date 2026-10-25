@@ -31,8 +31,9 @@ public class AdminDataInitializer implements CommandLineRunner {
 
             // Also keep admin@sridevisarees.com synchronized with Sridevisarees@1644
             createOrUpdateAdmin("admin@sridevisarees.com", "Sridevisarees@1644", "Sridevi Store Administrator");
-        } catch (Exception e) {
-            log.error("Could not complete admin account initialization: {}", e.getMessage());
+        } catch (Throwable t) {
+            log.warn("Admin account auto-provisioning deferred: MongoDB is not reachable ({}). " +
+                     "Please ensure your IP address is whitelisted in MongoDB Atlas Network Access.", t.getMessage());
         }
     }
 

@@ -48,6 +48,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(firstError));
     }
 
+    @ExceptionHandler({org.springframework.dao.DataAccessException.class, com.mongodb.MongoException.class})
+    public ResponseEntity<ApiResponse<Void>> handleDatabaseException(Exception ex) {
+        log.warn("MongoDB database operation failed: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiResponse.error("Database connection unavailable. If using MongoDB Atlas, please ensure your IP address is whitelisted in MongoDB Atlas Network Access."));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
         log.error("Unhandled server exception: {}", ex.getMessage(), ex);

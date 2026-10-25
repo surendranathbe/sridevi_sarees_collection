@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './components.css';
+import { getPublishedBanner, BANNER_UPDATE_EVENT } from '../data/bannerContent';
 
 const sarees = [
   {
@@ -119,6 +120,7 @@ const categoryPills = [
 ];
 
 export default function SareeHero() {
+  const [publishedBanner, setPublishedBanner] = useState(getPublishedBanner);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayIndex, setDisplayIndex] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
@@ -126,7 +128,51 @@ export default function SareeHero() {
   const [isPaused, setIsPaused] = useState(false);
   const touchStartXRef = useRef(0);
   const touchEndXRef = useRef(0);
-  const totalSarees = sarees.length;
+
+  // Synchronize banner when updated via Website Changes CMS or storage event
+  useEffect(() => {
+    const handleBannerUpdate = (e) => {
+      if (e && e.detail) {
+        setPublishedBanner(e.detail);
+      } else {
+        setPublishedBanner(getPublishedBanner());
+      }
+    };
+
+    const handleStorage = (e) => {
+      if (e.key === 'sridevi_published_banner') {
+        setPublishedBanner(getPublishedBanner());
+      }
+    };
+
+    window.addEventListener(BANNER_UPDATE_EVENT, handleBannerUpdate);
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener(BANNER_UPDATE_EVENT, handleBannerUpdate);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
+  // Dynamically merge published custom banner attributes into the featured first slide
+  const sareesList = useMemo(() => {
+    if (!publishedBanner) return sarees;
+    return sarees.map((item, idx) => {
+      if (idx === 0) {
+        return {
+          ...item,
+          title: publishedBanner.title || item.title,
+          subheadline: publishedBanner.subheadline || item.subheadline,
+          description: publishedBanner.description || item.description,
+          tag: publishedBanner.tag || item.tag,
+          subtitle: publishedBanner.subtitle || item.subtitle,
+          image: publishedBanner.desktopImage || item.image
+        };
+      }
+      return item;
+    });
+  }, [publishedBanner]);
+
+  const totalSarees = sareesList.length;
 
   // Synchronize dynamic text with active carousel slide
   useEffect(() => {
@@ -143,11 +189,11 @@ export default function SareeHero() {
 
   // Preload all high-res images to guarantee zero-latency transitions
   useEffect(() => {
-    sarees.forEach((item) => {
+    sareesList.forEach((item) => {
       const img = new Image();
       img.src = item.image;
     });
-  }, []);
+  }, [sareesList]);
 
   const handleNext = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % totalSarees);
@@ -324,7 +370,11 @@ export default function SareeHero() {
     }
   };
 
-  const activeSaree = sarees[displayIndex] || sarees[0];
+  const activeSaree = sareesList[displayIndex] || sareesList[0];
+
+  if (publishedBanner && publishedBanner.isVisible === false) {
+    return null;
+  }
 
   const renderAnimatedLetters = (title) => {
     let charCounter = 0;
@@ -446,25 +496,39 @@ export default function SareeHero() {
               type="button"
               className="saree-cta-primary-btn"
               onClick={() => {
-                const el = document.getElementById('collection-anchor');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                const target = (publishedBanner && publishedBanner.primaryButtonUrl) || '#collection-anchor';
+                if (target.startsWith('#')) {
+                  const el = document.getElementById(target.substring(1));
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  window.location.href = target;
+                }
               }}
             >
-              <span>EXPLORE COLLECTION</span>
+              <span>{(publishedBanner && publishedBanner.primaryButtonText) || 'EXPLORE COLLECTION'}</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14" />
                 <path d="m12 5 7 7-7 7" />
               </svg>
             </button>
 
-            <a
-              href="#view-all"
-              className="saree-cta-secondary-link"
-              onClick={(e) => e.preventDefault()}
-            >
-              <span>View All Sarees</span>
-              <span className="saree-link-arrow">&rarr;</span>
-            </a>
+            {publishedBanner && publishedBanner.secondaryButtonText && (
+              <a
+                href={publishedBanner.secondaryButtonUrl || '#view-all'}
+                className="saree-cta-secondary-link"
+                onClick={(e) => {
+                  const target = publishedBanner.secondaryButtonUrl || '#view-all';
+                  if (target.startsWith('#')) {
+                    e.preventDefault();
+                    const el = document.getElementById(target.substring(1));
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                <span>{publishedBanner.secondaryButtonText}</span>
+                <span className="saree-link-arrow">&rarr;</span>
+              </a>
+            )}
           </div>
 
           {/* Trust Value Badges */}
@@ -521,7 +585,7 @@ export default function SareeHero() {
 
           {/* Horizontal Layered 9:16 Showcase Carousel Stage */}
           <div className="saree-carousel-stage">
-            {sarees.map((saree, index) => {
+            {sareesList.map((saree, index) => {
               const cardStyle = getCardStyle(index);
               const isMain = index === currentIndex;
 

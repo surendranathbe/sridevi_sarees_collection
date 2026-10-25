@@ -48,10 +48,16 @@ public class AuthController {
      */
     @GetMapping("/verify")
     public ResponseEntity<ApiResponse<Map<String, Object>>> verifyToken(Authentication authentication) {
-        boolean valid = authentication != null && authentication.isAuthenticated();
+        if (authentication != null && authentication.isAuthenticated()) {
+            String email = authentication.getName() != null ? authentication.getName() : "";
+            return ResponseEntity.ok(ApiResponse.success("Token verified.", Map.of(
+                    "valid", true,
+                    "email", email
+            )));
+        }
         return ResponseEntity.ok(ApiResponse.success("Token verified.", Map.of(
-                "valid", valid,
-                "email", valid ? authentication.getName() : ""
+                "valid", false,
+                "email", ""
         )));
     }
 }

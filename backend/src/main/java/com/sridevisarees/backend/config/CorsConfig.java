@@ -23,7 +23,7 @@ public class CorsConfig {
 
         // Allow configured frontend origin (default: http://localhost:5173)
         List<String> origins = Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
+                .map(s -> s.trim())
                 .filter(s -> !s.isEmpty())
                 .toList();
         config.setAllowedOrigins(origins);

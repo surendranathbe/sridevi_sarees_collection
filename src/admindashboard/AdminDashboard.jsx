@@ -4,6 +4,7 @@ import silkBanner from '../assets/silk-sarees-banner1.png';
 import { useTypingAnimation } from '../data/typingAnimation';
 import Products from './Products';
 import EmbroideryServices from './EmbroideryServices';
+import WebsiteChanges from './websitechanges';
 import './admin.css';
 
 // Sidebar navigation items matching Image 2
@@ -897,6 +898,11 @@ const AdminDashboard = ({ onNavigate, onLogout }) => {
               setEmbroideryList={setEmbroideryList}
               setNotification={setNotification}
             />
+          ) : activeNav === 'Website Changes' ? (
+            /* =========================================================
+               VIEW 4: WEBSITE CHANGES & BANNER CMS (via websitechanges.jsx)
+               ========================================================= */
+            <WebsiteChanges setNotification={setNotification} />
           ) : (
             /* =========================================================
                VIEW 4: OTHER MODULE PAGES (REAL EMPTY STATES)
@@ -956,30 +962,6 @@ const AdminDashboard = ({ onNavigate, onLogout }) => {
                     <p style={{ color: '#786b73', fontSize: '0.88rem', margin: 0 }}>
                       No active dispatches in transit right now.
                     </p>
-                  </div>
-                </div>
-              )}
-
-              {activeNav === 'Website Changes' && (
-                <div>
-                  <p className="admin-showcase-desc">
-                    Storefront promotional announcements, festive banner headlines, and contact info.
-                  </p>
-                  <div className="admin-form-group" style={{ maxWidth: '640px', marginTop: '1rem' }}>
-                    <label htmlFor="promo-announcement" className="admin-form-label">
-                      <span>Header Announcement Banner Text</span>
-                    </label>
-                    <input
-                      id="promo-announcement"
-                      type="text"
-                      className="admin-form-input"
-                      defaultValue="Special Festive Offer: Pure Kanchipuram Pattu Sarees & Computer Blouse Works at Kandukur Showroom!"
-                    />
-                    <div style={{ marginTop: '0.8rem' }}>
-                      <button type="button" className="admin-btn-wine">
-                        Save Banner Changes
-                      </button>
-                    </div>
                   </div>
                 </div>
               )}

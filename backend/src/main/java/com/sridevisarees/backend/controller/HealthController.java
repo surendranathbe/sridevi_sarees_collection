@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api")
@@ -120,7 +121,8 @@ public class HealthController {
             log.info("Saved test document with ID: {}", savedDoc.getId());
 
             // Step 2: Retrieve document by ID to confirm read capability
-            TestConnectionDocument retrievedDoc = testRepository.findById(savedDoc.getId())
+            String docId = Objects.requireNonNull(savedDoc.getId(), "Test document ID must not be null");
+            TestConnectionDocument retrievedDoc = testRepository.findById(docId)
                     .orElseThrow(() -> new IllegalStateException("Test document was saved but could not be retrieved by ID"));
 
             response.put("status", "SUCCESS");

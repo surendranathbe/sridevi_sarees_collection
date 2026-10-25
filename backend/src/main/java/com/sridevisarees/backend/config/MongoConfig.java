@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -56,13 +57,13 @@ public class MongoConfig {
     @Bean
     @Primary
     public MongoDatabaseFactory mongoDatabaseFactory(MongoClient mongoClient) {
-        return new SimpleMongoClientDatabaseFactory(mongoClient, DATABASE_NAME);
+        return new SimpleMongoClientDatabaseFactory(Objects.requireNonNull(mongoClient), DATABASE_NAME);
     }
 
     @Bean
     @Primary
     public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDatabaseFactory) {
-        return new MongoTemplate(mongoDatabaseFactory);
+        return new MongoTemplate(Objects.requireNonNull(mongoDatabaseFactory));
     }
 
     public String resolveMongoUri() {
