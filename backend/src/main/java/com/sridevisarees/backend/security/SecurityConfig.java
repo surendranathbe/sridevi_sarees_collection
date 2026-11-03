@@ -45,12 +45,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // CORS preflight requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Public authentication & basic health check endpoints
+                        // Public endpoints
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/health").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
-                        // Protected API endpoints
-                        .requestMatchers("/api/auth/me", "/api/auth/verify").authenticated()
+                        // Public read-only storefront endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/embroidery-services/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/banner").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                        // Require ROLE_ADMIN for database health and admin endpoints
+                        .requestMatchers("/api/health/db").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // Default rule: all other requests require authentication
                         .anyRequest().authenticated()

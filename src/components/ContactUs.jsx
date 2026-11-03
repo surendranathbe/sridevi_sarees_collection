@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import heroBannerImg from '../assets/silk-sarees-banner1.png';
-import showroomImg from '../assets/about-image-2.jpg';
-import logoImg from '../assets/logo_2.png';
 import {
   dispatchCustomerInquiry,
   generateWhatsAppMessage,
@@ -15,11 +13,13 @@ const ContactUs = ({ onNavigate = () => {} }) => {
     name: '',
     phone: '',
     service: 'Pure Silk Sarees',
-    message: ''
+    message: '',
+    _honey: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedInfo, setSubmittedInfo] = useState(null);
   const [isSending, setIsSending] = useState(false);
+  const [cooldownWarning, setCooldownWarning] = useState('');
 
   // SEO Page Title & Scroll to top
   useEffect(() => {
@@ -52,30 +52,56 @@ const ContactUs = ({ onNavigate = () => {} }) => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    setCooldownWarning('');
     setIsSending(true);
 
     const snapshot = { ...formState };
-    setSubmittedInfo(snapshot);
-
-    // Dispatch the customer inquiry to owner mail sridevicollections1644@gmail.com with formatted table
     const result = await dispatchCustomerInquiry(snapshot);
+    setIsSending(false);
 
-    // Open mail client addressed to sridevicollections1644@gmail.com with structured table
-    try {
-      window.location.href = result.mailtoUrl;
-    } catch (err) {
-      console.log('Mail client dispatch:', err);
+    // Cooldown rate limit hit
+    if (result.cooldownBlocked) {
+      setCooldownWarning(result.message || 'Please wait before sending another inquiry.');
+      return;
     }
 
-    setIsSending(false);
+    // Bot trap triggered: silent success without network request or mail client fallback
+    if (result.botRejected) {
+      setIsSubmitted(true);
+      setSubmittedInfo({ name: snapshot.name || 'Friend', phone: snapshot.phone || '' });
+      setFormState({
+        name: '',
+        phone: '',
+        service: 'Pure Silk Sarees',
+        message: '',
+        _honey: ''
+      });
+      setTimeout(() => {
+        setIsSubmitted(false);
+      }, 8000);
+      return;
+    }
+
+    // Legitimate submission: show success
+    setSubmittedInfo(snapshot);
     setIsSubmitted(true);
 
-    // Reset the form fields while keeping the contact form displayed on the website
+    // Only fallback to mail client if network delivery failed on a legitimate human request
+    if (result.networkFailed && result.mailtoUrl) {
+      try {
+        window.location.href = result.mailtoUrl;
+      } catch (err) {
+        console.log('Mail client dispatch:', err);
+      }
+    }
+
+    // Reset form fields
     setFormState({
       name: '',
       phone: '',
       service: 'Pure Silk Sarees',
-      message: ''
+      message: '',
+      _honey: ''
     });
 
     // Auto-dismiss the success banner after 8 seconds
@@ -120,7 +146,7 @@ const ContactUs = ({ onNavigate = () => {} }) => {
             <button
               type="button"
               className="contact-breadcrumb-btn"
-              onClick={() => onNavigate('home', '#home')}
+              onClick={() => onNavigate('home')}
             >
               Home
             </button>
@@ -282,6 +308,17 @@ const ContactUs = ({ onNavigate = () => {} }) => {
                 </p>
               </div>
 
+              {/* Cooldown rate-limit notification */}
+              {cooldownWarning && (
+                <div className="form-submit-alert-banner" style={{ background: '#fffbeb', borderColor: '#fde68a', color: '#92400e' }} role="alert">
+                  <div className="submit-alert-icon" style={{ background: '#f59e0b', color: '#ffffff' }}>⏳</div>
+                  <div className="submit-alert-text">
+                    <h4 style={{ color: '#92400e' }}>Please Wait</h4>
+                    <p style={{ color: '#78350f' }}>{cooldownWarning}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Success Notification Alert (Form remains visible below) */}
               {isSubmitted && submittedInfo && (
                 <div className="form-submit-alert-banner" role="status">
@@ -297,6 +334,20 @@ const ContactUs = ({ onNavigate = () => {} }) => {
 
               {/* The Contact Form is ALWAYS Displayed on the Website */}
               <form className="contact-actual-form" onSubmit={handleFormSubmit}>
+                  {/* Honeypot field - hidden from legitimate human visitors, filled by bots */}
+                  <div style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, overflow: 'hidden' }} aria-hidden="true">
+                    <label htmlFor="contact-honey">Leave this field blank</label>
+                    <input
+                      type="text"
+                      id="contact-honey"
+                      name="_honey"
+                      tabIndex="-1"
+                      autoComplete="off"
+                      value={formState._honey}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
                   <div className="form-row-duo">
                     <div className="form-field-group">
                       <label htmlFor="contact-name" className="field-label">
@@ -368,8 +419,8 @@ const ContactUs = ({ onNavigate = () => {} }) => {
                   </div>
 
                   <div className="form-submit-row">
-                    <button type="submit" className="form-submit-btn">
-                      <span>Submit Inquiry</span>
+                    <button type="submit" className="form-submit-btn" disabled={isSending}>
+                      <span>{isSending ? 'Sending Inquiry...' : 'Submit Inquiry'}</span>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13" />
                         <polygon points="22 2 15 22 11 13 2 9 22 2" />

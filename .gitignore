@@ -32,3 +32,7 @@ application-secrets.properties
 backend/.env
 backend/.env*.local
 backend/target/
+# Uploads & local storage
+uploads/
+backend/uploads/
+

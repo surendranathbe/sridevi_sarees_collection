@@ -111,10 +111,102 @@ export const generateHtmlEmailTable = (formData) => {
 export const FORMSUBMIT_TOKEN = '86899a1b99b8741f04146a4b82e72b88';
 
 /**
+ * Contact mail security configuration
+ * - honeypotField: hidden field bots fill and humans do not
+ * - cooldownSeconds: 60-second rate limiting per client session
+ * - captcha: FormSubmit default reCAPTCHA active (removed '_captcha: false')
+ */
+export const contactMailConfig = {
+  honeypotField: '_honey',
+  cooldownSeconds: 60,
+  cooldownStorageKey: 'sridevi_contact_last_submitted',
+  ownerEmail: OWNER_EMAIL,
+  formSubmitToken: FORMSUBMIT_TOKEN,
+  template: 'table'
+};
+
+/**
+ * Checks remaining cooldown seconds for contact form submission from sessionStorage.
+ * @returns {number} Seconds remaining (0 if cooldown has elapsed)
+ */
+export const getContactCooldownRemaining = () => {
+  if (typeof window === 'undefined') return 0;
+  try {
+    const lastTime = sessionStorage.getItem(contactMailConfig.cooldownStorageKey);
+    if (!lastTime) return 0;
+    const elapsed = Date.now() - Number(lastTime);
+    const cooldownMs = contactMailConfig.cooldownSeconds * 1000;
+    const remaining = cooldownMs - elapsed;
+    return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
+  } catch {
+    return 0;
+  }
+};
+
+/**
+ * Sets the cooldown timestamp in sessionStorage.
+ */
+export const setContactCooldown = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      sessionStorage.setItem(contactMailConfig.cooldownStorageKey, String(Date.now()));
+    } catch {
+      // sessionStorage unavailable
+    }
+  }
+};
+
+/**
+ * Resets the cooldown timestamp in sessionStorage (useful for testing).
+ */
+export const resetContactCooldown = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      sessionStorage.removeItem(contactMailConfig.cooldownStorageKey);
+    } catch {
+      // sessionStorage unavailable
+    }
+  }
+};
+
+/**
  * Handles generating email URLs and triggers sending to sridevicollections1644@gmail.com
  * Formats the customer details in a clean table format with store logo for the owner.
+ *
+ * Security features:
+ * - Honeypot check: silently ignores submissions where bot-trap field is populated.
+ * - Cooldown enforcement: 60-second cooldown stored in sessionStorage prevents spam clicks.
+ * - Captcha protection: FormSubmit captcha enabled by omitting '_captcha: false'.
+ * - Safe fallback: mailto: fallback only triggered on legitimate network failure, never on bot or cooldown rejection.
  */
-export const dispatchCustomerInquiry = async (formData) => {
+export const submitContactForm = async (formData = {}) => {
+  // 1. Honeypot check: reject bots immediately with silent success; no network request, no mailto
+  const honeypotValue = formData[contactMailConfig.honeypotField] || formData._honey;
+  if (honeypotValue && String(honeypotValue).trim() !== '') {
+    return {
+      success: true,
+      botRejected: true,
+      cooldownBlocked: false,
+      networkFailed: false,
+      mailtoUrl: null,
+      message: 'Inquiry submitted successfully.'
+    };
+  }
+
+  // 2. Client-side cooldown (60 seconds) in sessionStorage
+  const remainingCooldown = getContactCooldownRemaining();
+  if (remainingCooldown > 0) {
+    return {
+      success: false,
+      botRejected: false,
+      cooldownBlocked: true,
+      remainingSeconds: remainingCooldown,
+      message: `Please wait ${remainingCooldown} second${remainingCooldown === 1 ? '' : 's'} before submitting another inquiry.`,
+      networkFailed: false,
+      mailtoUrl: null
+    };
+  }
+
   const dateStr = new Date().toLocaleString('en-IN', {
     dateStyle: 'full',
     timeStyle: 'short',
@@ -126,13 +218,12 @@ export const dispatchCustomerInquiry = async (formData) => {
   const textTable = generateTextEmailTable(formData);
   const bodyEncoded = encodeURIComponent(textTable);
 
-  // Mailto link for native mail clients with table body
+  // Mailto link for native mail clients with table body (only used if network request fails)
   const mailtoUrl = `mailto:${OWNER_EMAIL}?subject=${subjectEncoded}&body=${bodyEncoded}`;
-
-  // Direct Web Gmail compose URL with table body
   const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${OWNER_EMAIL}&su=${subjectEncoded}&body=${bodyEncoded}`;
 
-  // Direct backend delivery to sridevicollections1644@gmail.com with table template & logo attachment
+  let networkFailed = false;
+
   try {
     const payload = new FormData();
     payload.append('✦ STORE BRAND & LOGO ✦', 'SRIDEVI SAREES & COLLECTIONS (శ్రీదేవి కలెక్షన్స్)');
@@ -143,8 +234,8 @@ export const dispatchCustomerInquiry = async (formData) => {
     payload.append('Submission Timestamp', dateStr);
     payload.append('Store Destination', 'Near Sai Baba Temple, Kovur Road, Kandukur - 523105, AP');
     payload.append('_subject', subjectText);
-    payload.append('_template', 'table');
-    payload.append('_captcha', 'false');
+    payload.append('_template', contactMailConfig.template);
+    // Note: removed '_captcha': 'false' so FormSubmit's captcha protects the endpoint.
 
     // Attach Sridevi Sarees logo image so it displays directly in the email
     try {
@@ -152,7 +243,7 @@ export const dispatchCustomerInquiry = async (formData) => {
       const logoBlob = await logoRes.blob();
       payload.append('attachment', logoBlob, 'sridevi_sarees_logo.png');
     } catch (attachErr) {
-      console.log('Logo attach error:', attachErr);
+      console.log('Logo attach skipped:', attachErr);
     }
 
     // Send to activated token endpoint (with fallback to owner email)
@@ -160,26 +251,39 @@ export const dispatchCustomerInquiry = async (formData) => {
       ? `https://formsubmit.co/ajax/${FORMSUBMIT_TOKEN}`
       : `https://formsubmit.co/ajax/${OWNER_EMAIL}`;
 
-    await fetch(targetEndpoint, {
+    const response = await fetch(targetEndpoint, {
       method: 'POST',
       headers: {
         'Accept': 'application/json'
       },
       body: payload
     });
-  } catch (err) {
-    console.log('Background mail submission to owner:', err);
+
+    if (!response.ok) {
+      networkFailed = true;
+    }
+  } catch {
+    networkFailed = true;
   }
 
+  // Set the 60-second cooldown timestamp after attempt
+  setContactCooldown();
+
   return {
+    success: !networkFailed,
+    botRejected: false,
+    cooldownBlocked: false,
+    networkFailed,
     ownerEmail: OWNER_EMAIL,
     subject: subjectText,
     textTable,
     htmlTable: generateHtmlEmailTable(formData),
-    mailtoUrl,
+    mailtoUrl: networkFailed ? mailtoUrl : null,
     gmailUrl
   };
 };
+
+export const dispatchCustomerInquiry = submitContactForm;
 
 /**
  * Formats a clean, one-by-one structured message for WhatsApp with bold headers, emojis, and line breaks.

@@ -6,6 +6,7 @@ import {
   validateEmbroideryForm,
   formatIndianCurrency
 } from '../data/products';
+import { apiFetch, uploadImageFile } from '../utils/api';
 
 /**
  * EmbroideryServices Component
@@ -72,39 +73,32 @@ const EmbroideryServices = ({
     }
   };
 
-  // Handle file uploads from the user's computer
-  const handleFileUpload = (e) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Handle file uploads directly to backend /api/admin/uploads
+  const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      setFormErrors((prev) => ({
-        ...prev,
-        imageUrl: 'Please select a valid image file (PNG, JPG, WEBP, etc.)'
-      }));
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setFormErrors((prev) => ({
-        ...prev,
-        imageUrl: 'Image file size must be less than 5MB.'
-      }));
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (loadEvent) => {
-      const dataUrl = loadEvent.target.result;
+    try {
+      setIsUploading(true);
+      const url = await uploadImageFile(file);
       setFormData((prev) => ({
         ...prev,
-        imageUrl: dataUrl
+        imageUrl: url
       }));
       if (formErrors.imageUrl) {
         setFormErrors((prev) => ({ ...prev, imageUrl: undefined }));
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      setFormErrors((prev) => ({
+        ...prev,
+        imageUrl: err.message || 'Image upload failed.'
+      }));
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Clear chosen image
@@ -115,8 +109,8 @@ const EmbroideryServices = ({
     }
   };
 
-  // Handle form submission (Add / Update)
-  const handleSubmit = (e) => {
+  // Handle form submission (Add / Update via backend API)
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validation = validateEmbroideryForm(formData);
     if (!validation.isValid) {
@@ -124,69 +118,126 @@ const EmbroideryServices = ({
       return;
     }
 
-    const formattedDesign = {
-      id: formData.id.trim(),
-      name: formData.name.trim(),
+    const payload = {
+      serviceId: formData.id.trim(),
+      designName: formData.name.trim(),
+      category: 'Blouse Embroidery',
+      cost: Number(formData.cost),
+      leadTime: '3-5 Days',
       description: formData.description.trim(),
-      imageUrl: formData.imageUrl.trim(),
-      cost: Number(formData.cost)
+      imageUrl: formData.imageUrl.trim()
     };
 
-    if (formMode === 'edit') {
-      if (formattedDesign.id !== editingOriginalId) {
-        const conflict = embroideryList.some((item) => item.id === formattedDesign.id);
-        if (conflict) {
-          setFormErrors({ id: 'Another embroidery design with this ID already exists.' });
-          return;
+    setIsSubmitting(true);
+    try {
+      const isEdit = formMode === 'edit';
+      const endpoint = isEdit
+        ? `/api/admin/embroidery-services/${encodeURIComponent(editingOriginalId)}`
+        : '/api/admin/embroidery-services';
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const response = await apiFetch(endpoint, {
+        method,
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || !result.success) {
+        if (result.errors && typeof result.errors === 'object') {
+          const mappedErrors = {};
+          if (result.errors.serviceId) mappedErrors.id = result.errors.serviceId;
+          if (result.errors.designName) mappedErrors.name = result.errors.designName;
+          if (result.errors.imageUrl) mappedErrors.imageUrl = result.errors.imageUrl;
+          if (result.errors.cost) mappedErrors.cost = result.errors.cost;
+          if (result.errors.description) mappedErrors.description = result.errors.description;
+          setFormErrors({ ...result.errors, ...mappedErrors });
+        } else {
+          setFormErrors({ general: result.message || 'Failed to save embroidery design.' });
         }
-      }
-
-      setEmbroideryList((prev) =>
-        prev.map((item) =>
-          item.id === editingOriginalId ? formattedDesign : item
-        )
-      );
-
-      if (setNotification) {
-        setNotification({
-          type: 'success',
-          text: `Embroidery design "${formattedDesign.name}" updated successfully.`
-        });
-      }
-    } else {
-      const conflict = embroideryList.some((item) => item.id === formattedDesign.id);
-      if (conflict) {
-        setFormErrors({ id: 'An embroidery design with this ID already exists.' });
         return;
       }
 
-      setEmbroideryList((prev) => [formattedDesign, ...prev]);
+      const saved = result.data;
+      const normalizedDesign = {
+        id: saved?.serviceId || payload.serviceId,
+        name: saved?.designName || payload.designName,
+        description: saved?.description || payload.description,
+        imageUrl: saved?.imageUrl || payload.imageUrl,
+        cost: saved?.cost !== undefined ? saved.cost : payload.cost,
+        ...saved
+      };
 
-      if (setNotification) {
-        setNotification({
-          type: 'success',
-          text: `Embroidery design "${formattedDesign.name}" added to collection.`
-        });
+      if (isEdit) {
+        setEmbroideryList((prev) =>
+          prev.map((item) =>
+            item.id === editingOriginalId ? normalizedDesign : item
+          )
+        );
+
+        if (setNotification) {
+          setNotification({
+            type: 'success',
+            text: `Embroidery design "${normalizedDesign.name}" updated successfully.`
+          });
+        }
+      } else {
+        setEmbroideryList((prev) => [normalizedDesign, ...prev]);
+
+        if (setNotification) {
+          setNotification({
+            type: 'success',
+            text: `Embroidery design "${normalizedDesign.name}" added to collection.`
+          });
+        }
       }
-    }
 
-    handleCloseModal();
+      handleCloseModal();
+    } catch (err) {
+      setFormErrors({ general: err.message || 'An unexpected error occurred while saving embroidery design.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Delete embroidery design with confirmation
-  const handleDeleteDesign = (designId, designName) => {
+  // Delete embroidery design with confirmation via backend API
+  const handleDeleteDesign = async (designId, designName) => {
     const isConfirmed = window.confirm(
       `Are you sure you want to delete embroidery design "${designName}" (ID: ${designId})?`
     );
     if (!isConfirmed) return;
 
-    setEmbroideryList((prev) => prev.filter((item) => item.id !== designId));
-
-    if (setNotification) {
-      setNotification({
-        type: 'success',
-        text: `Embroidery design "${designName}" was deleted.`
+    try {
+      const response = await apiFetch(`/api/admin/embroidery-services/${encodeURIComponent(designId)}`, {
+        method: 'DELETE'
       });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || !result.success) {
+        if (setNotification) {
+          setNotification({
+            type: 'error',
+            text: result.message || `Failed to delete design "${designName}".`
+          });
+        }
+        return;
+      }
+
+      setEmbroideryList((prev) => prev.filter((item) => item.id !== designId));
+
+      if (setNotification) {
+        setNotification({
+          type: 'success',
+          text: `Embroidery design "${designName}" was deleted.`
+        });
+      }
+    } catch (err) {
+      if (setNotification) {
+        setNotification({
+          type: 'error',
+          text: err.message || `Failed to delete design "${designName}".`
+        });
+      }
     }
   };
 
@@ -447,6 +498,11 @@ const EmbroideryServices = ({
             </div>
 
             <form onSubmit={handleSubmit} className="admin-modal-form" noValidate>
+              {formErrors.general && (
+                <div className="admin-form-error-banner" style={{ padding: '0.65rem', marginBottom: '0.9rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#b91c1c', fontSize: '0.85rem' }}>
+                  {formErrors.general}
+                </div>
+              )}
               {/* 1) ID */}
               <div className="admin-form-group">
                 <label htmlFor="modal-embroidery-id" className="admin-form-label">
@@ -531,7 +587,7 @@ const EmbroideryServices = ({
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept="image/*"
+                      accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                       className="admin-hidden-file-input"
                       onChange={handleFileUpload}
                     />
@@ -541,7 +597,7 @@ const EmbroideryServices = ({
                         <polyline points="17 8 12 3 7 8" />
                         <line x1="12" y1="3" x2="12" y2="15" />
                       </svg>
-                      Upload
+                      {isUploading ? 'Uploading...' : 'Upload'}
                     </span>
                   </label>
                 </div>
@@ -606,8 +662,8 @@ const EmbroideryServices = ({
                 >
                   Cancel
                 </button>
-                <button type="submit" className="admin-btn-wine">
-                  {formMode === 'edit' ? 'Update Design' : 'Submit'}
+                <button type="submit" className="admin-btn-wine" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : formMode === 'edit' ? 'Update Design' : 'Submit'}
                 </button>
               </div>
             </form>

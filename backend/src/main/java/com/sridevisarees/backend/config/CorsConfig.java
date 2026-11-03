@@ -13,13 +13,13 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    @Value("${app.cors.allowed-origins:http://localhost:5173}")
+    @Value("${FRONTEND_URL:${app.cors.allowed-origins:http://localhost:5173}}")
     private String allowedOrigins;
 
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
+        config.setAllowCredentials(false);
 
         // Allow configured frontend origin (default: http://localhost:5173)
         List<String> origins = Arrays.stream(allowedOrigins.split(","))

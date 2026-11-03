@@ -13,43 +13,64 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 public class AdminAuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AdminAuthService.class);
+    public static final String GENERIC_LOGIN_ERROR = "Invalid email or password.";
 
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RateLimitingService rateLimitingService;
+    private final String dummyBcryptHash;
 
     public AdminAuthService(AdminRepository adminRepository,
                             PasswordEncoder passwordEncoder,
-                            JwtTokenProvider jwtTokenProvider) {
+                            JwtTokenProvider jwtTokenProvider,
+                            RateLimitingService rateLimitingService) {
         this.adminRepository = adminRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.rateLimitingService = rateLimitingService;
+        this.dummyBcryptHash = passwordEncoder.encode("sridevi-dummy-bcrypt-hash-timing-defense");
     }
 
     public LoginResponse authenticateAdmin(LoginRequest request) {
-        String email = request.getEmail().trim().toLowerCase();
+        String email = (request.getEmail() != null) ? request.getEmail().trim().toLowerCase() : "";
+        String rawPassword = (request.getPassword() != null) ? request.getPassword() : "";
 
-        Admin admin = adminRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> {
-                    log.warn("Authentication failed: No admin found with email '{}'", email);
-                    return new BadCredentialsException("Invalid administrator email or password.");
-                });
+        Optional<Admin> adminOpt = adminRepository.findByEmailIgnoreCase(email);
 
+        // When email does not exist, run dummy BCrypt match so response time does not reveal whether the account exists
+        if (adminOpt.isEmpty()) {
+            passwordEncoder.matches(rawPassword, dummyBcryptHash);
+            rateLimitingService.recordFailedAttempt(email);
+            log.warn("Authentication failed: invalid credentials for email '{}'", email);
+            throw new BadCredentialsException(GENERIC_LOGIN_ERROR);
+        }
+
+        Admin admin = adminOpt.get();
+
+        // When account is deactivated, still evaluate password match to ensure timing consistency, then reject with generic error
         if (!admin.isActive()) {
-            log.warn("Authentication rejected: Admin account '{}' is currently deactivated.", email);
-            throw new BadCredentialsException("This administrator account has been deactivated. Please contact support.");
+            passwordEncoder.matches(rawPassword, admin.getPassword());
+            rateLimitingService.recordFailedAttempt(email);
+            log.warn("Authentication rejected: account inactive for email '{}'", email);
+            throw new BadCredentialsException(GENERIC_LOGIN_ERROR);
         }
 
         // Verify BCrypt password
-        if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
-            log.warn("Authentication failed: Incorrect password for admin '{}'", email);
-            throw new BadCredentialsException("Invalid administrator email or password.");
+        if (!passwordEncoder.matches(rawPassword, admin.getPassword())) {
+            rateLimitingService.recordFailedAttempt(email);
+            log.warn("Authentication failed: invalid credentials for email '{}'", email);
+            throw new BadCredentialsException(GENERIC_LOGIN_ERROR);
         }
+
+        // Reset account failures on successful authentication
+        rateLimitingService.resetAccountFailures(email);
 
         // Record successful login timestamp
         admin.setLastLoginAt(Instant.now());

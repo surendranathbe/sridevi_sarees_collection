@@ -1,5 +1,6 @@
 package com.sridevisarees.backend.security;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,26 +34,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String email = tokenProvider.getEmailFromToken(jwt);
-                String role = tokenProvider.getRoleFromToken(jwt);
+            if (StringUtils.hasText(jwt)) {
+                // Parse and validate token once, reusing the Claims object
+                Claims claims = tokenProvider.parseAndValidateClaims(jwt);
+                String email = claims.getSubject();
+                String role = claims.get("role", String.class);
 
-                if (role == null || role.isBlank()) {
-                    role = "ROLE_ADMIN";
+                // Strictly require role and only accept ROLE_ADMIN
+                if (!StringUtils.hasText(role)) {
+                    logger.warn("JWT authentication rejected: Token is missing a role claim.");
+                } else if (!"ROLE_ADMIN".equals(role)) {
+                    logger.warn("JWT authentication rejected: Role is not authorized ('" + role + "').");
+                } else if (!StringUtils.hasText(email)) {
+                    logger.warn("JWT authentication rejected: Token subject email is missing.");
+                } else {
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    email,
+                                    null,
+                                    Collections.singletonList(new SimpleGrantedAuthority(role))
+                            );
+
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                email,
-                                null,
-                                Collections.singletonList(new SimpleGrantedAuthority(role))
-                        );
-
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception ex) {
-            logger.error("Could not set user authentication in security context", ex);
+            // Log failure at WARN level with a short message, without stack trace
+            logger.warn("JWT authentication failed: " + ex.getMessage());
         }
 
         filterChain.doFilter(request, response);

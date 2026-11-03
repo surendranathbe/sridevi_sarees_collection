@@ -27,6 +27,10 @@ application-local.properties
 application-secrets.properties
 application-production.properties
 
+# Uploads & local storage
+uploads/
+backend/uploads/
+
 # Logs
 *.log
 logs/

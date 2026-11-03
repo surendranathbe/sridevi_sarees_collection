@@ -5,6 +5,7 @@ import { useTypingAnimation } from '../data/typingAnimation';
 import Products from './Products';
 import EmbroideryServices from './EmbroideryServices';
 import WebsiteChanges from './websitechanges';
+import apiFetch from '../utils/api';
 import './admin.css';
 
 // Sidebar navigation items matching Image 2
@@ -113,10 +114,10 @@ const SIDEBAR_NAV_ITEMS = [
 ];
 
 const AdminDashboard = ({ onNavigate, onLogout }) => {
-  // Current authenticated admin profile from localStorage
+  // Current authenticated admin profile from sessionStorage
   const currentAdmin = React.useMemo(() => {
     try {
-      const stored = localStorage.getItem('adminUser');
+      const stored = sessionStorage.getItem('adminUser');
       return stored ? JSON.parse(stored) : { email: 'admin@sridevisarees.com', name: 'Administrator' };
     } catch {
       return { email: 'admin@sridevisarees.com', name: 'Administrator' };
@@ -158,6 +159,37 @@ const AdminDashboard = ({ onNavigate, onLogout }) => {
 
   // Embroidery Services State (shared with EmbroideryServices.jsx)
   const [embroideryList, setEmbroideryList] = useState([]);
+
+  // Load real catalog products and embroidery services from backend API on mount
+  useEffect(() => {
+    let isMounted = true;
+    apiFetch('/api/products')
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data?.data && Array.isArray(data.data)) {
+          setProductsList(data.data);
+        }
+      })
+      .catch(() => {});
+
+    apiFetch('/api/embroidery-services')
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data?.data && Array.isArray(data.data)) {
+          const normalized = data.data.map((item) => ({
+            id: item.serviceId || item.id,
+            name: item.designName || item.name,
+            ...item
+          }));
+          setEmbroideryList(normalized);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Real inventory list state: empty by default per "REAL DATA ONLY - NO DUMMY DATA" requirement
   const [inventoryList, setInventoryList] = useState([]);
@@ -449,8 +481,8 @@ const AdminDashboard = ({ onNavigate, onLogout }) => {
                 if (onLogout) {
                   onLogout();
                 } else {
-                  localStorage.removeItem('adminToken');
-                  localStorage.removeItem('adminUser');
+                  sessionStorage.removeItem('adminToken');
+                  sessionStorage.removeItem('adminUser');
                   if (onNavigate) onNavigate('admin-login');
                   else window.location.href = '/admin';
                 }

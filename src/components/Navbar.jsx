@@ -9,7 +9,13 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
   const [cartCount, setCartCount] = useState(2);
 
   const activeItem =
-    currentView === 'about' ? 'About Us' : currentView === 'contact' ? 'Contact Us' : selectedNav;
+    currentView === 'about'
+      ? 'About Us'
+      : currentView === 'contact'
+      ? 'Contact Us'
+      : currentView === 'collections'
+      ? 'Our Collections'
+      : selectedNav;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,37 +31,32 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
   }, []);
 
   const leftNavItems = [
-    { label: 'Home', href: '#home' },
-    { label: 'About Us', href: '#about-us' },
-    { label: 'Our Collections', href: '#our-collections' },
+    { label: 'Home', href: '/' },
+    { label: 'About Us', href: '/about-us' },
+    { label: 'Our Collections', href: '/our-collections' },
   ];
 
   const rightNavItems = [
     { label: 'Embroidery Designs', href: '#our-blouse-collection' },
     { label: 'Latest Collections', href: '#latest-collections' },
-    { label: 'Contact Us', href: '#contact-us' },
+    { label: 'Contact Us', href: '/contact-us' },
   ];
 
   const allNavItems = [...leftNavItems, ...rightNavItems];
 
-  const handleNavClick = (arg1, arg2, arg3) => {
-    let label = '';
-    let href = '';
-    if (arg1 && typeof arg1 === 'object' && arg1.preventDefault) {
-      arg1.preventDefault();
-      label = arg2;
-      href = arg3;
-    } else {
-      label = arg1;
-      href = arg2;
+  const handleNavClick = (e, label, href) => {
+    if (e && e.preventDefault) {
+      e.preventDefault();
     }
     setSelectedNav(label);
     setMobileMenuOpen(false);
 
-    if (label === 'About Us' || href === '#about-us') {
+    if (label === 'About Us' || href === '/about-us' || href === '#about-us') {
       onNavigate('about');
-    } else if (label === 'Contact Us' || href === '#contact-us') {
+    } else if (label === 'Contact Us' || href === '/contact-us' || href === '#contact-us') {
       onNavigate('contact');
+    } else if (label === 'Our Collections' || href === '/our-collections' || href === '#our-collections') {
+      onNavigate('collections');
     } else {
       onNavigate('home', href);
     }
@@ -151,7 +152,7 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
                 <a
                   href={item.href}
                   className={`nav-link ${activeItem === item.label ? 'active' : ''}`}
-                  onClick={() => handleNavClick(item.label, item.href)}
+                  onClick={(e) => handleNavClick(e, item.label, item.href)}
                 >
                   <span className="nav-link-text">{item.label}</span>
                   <span className="nav-link-indicator" />
@@ -164,9 +165,9 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
         {/* Brand Logo (Desktop Center, Mobile Left) */}
         <div className="nav-center-logo">
           <a
-            href="#home"
+            href="/"
             className="logo-anchor"
-            onClick={() => handleNavClick('Home', '#home')}
+            onClick={(e) => handleNavClick(e, 'Home', '/')}
             aria-label="Sridevi Sarees Homepage"
           >
             <div className="logo-halo" />
@@ -186,7 +187,7 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
                 <a
                   href={item.href}
                   className={`nav-link ${activeItem === item.label ? 'active' : ''}`}
-                  onClick={() => handleNavClick(item.label, item.href)}
+                  onClick={(e) => handleNavClick(e, item.label, item.href)}
                 >
                   <span className="nav-link-text">{item.label}</span>
                   <span className="nav-link-indicator" />
@@ -358,7 +359,7 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
                 <a
                   href={item.href}
                   className={`mobile-drawer-link ${activeItem === item.label ? 'active' : ''}`}
-                  onClick={() => handleNavClick(item.label, item.href)}
+                  onClick={(e) => handleNavClick(e, item.label, item.href)}
                 >
                   <span className="link-bullet">✦</span>
                   <span className="link-title">{item.label}</span>

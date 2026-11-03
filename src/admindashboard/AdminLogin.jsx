@@ -22,16 +22,6 @@ const AdminLogin = ({ onLoginSuccess, onNavigate, authError }) => {
     }));
   };
 
-  const goToDashboard = () => {
-    if (onLoginSuccess) {
-      onLoginSuccess();
-    } else if (onNavigate) {
-      onNavigate('admin-dashboard');
-    } else {
-      window.location.href = '/admindashboard';
-    }
-  };
-
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setStatusMessage(null);
@@ -50,7 +40,8 @@ const AdminLogin = ({ onLoginSuccess, onNavigate, authError }) => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -63,15 +54,22 @@ const AdminLogin = ({ onLoginSuccess, onNavigate, authError }) => {
 
       const result = await response.json().catch(() => ({}));
 
+      if (response.status === 429) {
+        setStatusMessage({
+          type: 'error',
+          text: 'Too many login attempts. Please wait 15 minutes before trying again.'
+        });
+        return;
+      }
+
       if (response.ok && result.success && result.data && result.data.token) {
-        // Securely persist JWT token and admin info in localStorage
-        localStorage.setItem('adminToken', result.data.token);
-        localStorage.setItem(
+        // Securely persist JWT token and admin info in sessionStorage (omit role)
+        sessionStorage.setItem('adminToken', result.data.token);
+        sessionStorage.setItem(
           'adminUser',
           JSON.stringify({
             email: result.data.email,
-            name: result.data.name,
-            role: result.data.role
+            name: result.data.name
           })
         );
 
@@ -90,18 +88,16 @@ const AdminLogin = ({ onLoginSuccess, onNavigate, authError }) => {
           }
         }, 350);
       } else {
-        const errorMsg =
-          result.message || 'Invalid administrator email or password. Please try again.';
         setStatusMessage({
           type: 'error',
-          text: errorMsg
+          text: 'Invalid email or password.'
         });
       }
     } catch (err) {
       console.error('Authentication request error:', err);
       setStatusMessage({
         type: 'error',
-        text: 'Unable to connect to the authentication server. Please ensure the Spring Boot backend is running on port 8080.'
+        text: 'Unable to connect to the authentication server. Please try again later.'
       });
     } finally {
       setIsSubmitting(false);
@@ -152,7 +148,7 @@ const AdminLogin = ({ onLoginSuccess, onNavigate, authError }) => {
                 name="email"
                 type="text"
                 className="admin-form-input admin-input-with-icon"
-                placeholder="Sridevisarees.com"
+                placeholder="Enter email address"
                 value={formData.email}
                 onChange={handleInputChange}
                 required

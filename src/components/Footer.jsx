@@ -4,40 +4,40 @@ import './components.css';
 
 const Footer = ({ onNavigate = () => {} }) => {
   const navLinks = [
-    { label: 'Home', href: '#home' },
-    { label: 'About Us', href: '#about-us' },
-    { label: 'Our Collections', href: '#our-collections' },
+    { label: 'Home', href: '/' },
+    { label: 'About Us', href: '/about-us' },
+    { label: 'Our Collections', href: '/our-collections' },
     { label: 'Embroidery Designs', href: '#our-blouse-collection' },
     { label: 'Latest Collections', href: '#latest-collections' },
     { label: 'Customer Reviews', href: '#customer-reviews' },
-    { label: 'Contact Us', href: '#contact-us' }
+    { label: 'Contact Us', href: '/contact-us' }
   ];
 
   const weaveCategories = [
-    { label: 'Kanchipuram Pattu', href: '#our-collections' },
-    { label: 'Royal Dola Silk', href: '#our-collections' },
-    { label: 'Artisan Handlooms', href: '#our-collections' },
+    { label: 'Kanchipuram Pattu', href: '/our-collections' },
+    { label: 'Royal Dola Silk', href: '/our-collections' },
+    { label: 'Artisan Handlooms', href: '/our-collections' },
     { label: 'Computer Work Blouses', href: '#our-blouse-collection' },
     { label: 'Custom Tailoring & Stitching', href: '#our-blouse-collection' }
   ];
 
   const scrollToSection = (e, href) => {
-    e.preventDefault();
-    if (href === '#about-us') {
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
+    if (href === '#about-us' || href === '/about-us') {
       onNavigate('about');
       return;
     }
-    if (href === '#contact-us') {
+    if (href === '#contact-us' || href === '/contact-us') {
       onNavigate('contact');
       return;
     }
+    if (href === '#our-collections' || href === '/our-collections') {
+      onNavigate('collections');
+      return;
+    }
     onNavigate('home', href);
-    setTimeout(() => {
-      const target = document.querySelector(href);
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 60);
   };
 
   return (
@@ -56,8 +56,8 @@ const Footer = ({ onNavigate = () => {} }) => {
           <div className="footer-col col-lg-4 col-brand">
             <div className="footer-logo-wrap">
               <a
-                href="#home"
-                onClick={(e) => scrollToSection(e, '#home')}
+                href="/"
+                onClick={(e) => scrollToSection(e, '/')}
                 className="footer-logo-card"
                 aria-label="Sridevi Sarees Homepage"
               >

@@ -60,13 +60,14 @@ export function useTypingAnimation(
     headingText: targetText || TYPING_ANIMATION_CONFIG.headingText
   };
 
-  const [displayedText, setDisplayedText] = useState('');
+  const [displayedText, setDisplayedText] = useState(() => (
+    checkPrefersReducedMotion() ? (targetText || TYPING_ANIMATION_CONFIG.headingText) : ''
+  ));
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     // Accessibility: Respect user's prefers-reduced-motion OS setting
     if (checkPrefersReducedMotion()) {
-      setDisplayedText(config.headingText);
       return;
     }
 

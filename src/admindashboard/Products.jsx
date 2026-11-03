@@ -6,6 +6,7 @@ import {
   validateProductForm,
   formatIndianCurrency
 } from '../data/products';
+import { apiFetch, uploadImageFile } from '../utils/api';
 
 /**
  * Products Management Component
@@ -75,40 +76,32 @@ const Products = ({
     }
   };
 
-  // Handle file uploads directly from the user's computer
-  const handleFileUpload = (e, fieldName) => {
+  const [uploadingField, setUploadingField] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Handle file uploads directly to backend /api/admin/uploads
+  const handleFileUpload = async (e, fieldName) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      setFormErrors((prev) => ({
-        ...prev,
-        [fieldName]: 'Please select a valid image file (PNG, JPG, WEBP, etc.)'
-      }));
-      return;
-    }
-
-    // 5MB limit
-    if (file.size > 5 * 1024 * 1024) {
-      setFormErrors((prev) => ({
-        ...prev,
-        [fieldName]: 'Image size must be less than 5MB.'
-      }));
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (loadEvent) => {
-      const dataUrl = loadEvent.target.result;
+    try {
+      setUploadingField(fieldName);
+      const url = await uploadImageFile(file);
       setFormData((prev) => ({
         ...prev,
-        [fieldName]: dataUrl
+        [fieldName]: url
       }));
       if (formErrors[fieldName]) {
         setFormErrors((prev) => ({ ...prev, [fieldName]: undefined }));
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      setFormErrors((prev) => ({
+        ...prev,
+        [fieldName]: err.message || 'Image upload failed.'
+      }));
+    } finally {
+      setUploadingField(null);
+    }
   };
 
   // Clear chosen image
@@ -119,8 +112,8 @@ const Products = ({
     }
   };
 
-  // Handle form submission (validation, create, update)
-  const handleSubmit = (e) => {
+  // Handle form submission (validation, create, update via backend API)
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validation = validateProductForm(formData);
     if (!validation.isValid) {
@@ -137,62 +130,101 @@ const Products = ({
       cost: Number(formData.cost)
     };
 
-    if (formMode === 'edit') {
-      // Check if product ID was changed to an existing ID
-      if (formattedProduct.productId !== editingOriginalId) {
-        const conflict = productsList.some((p) => p.productId === formattedProduct.productId);
-        if (conflict) {
-          setFormErrors({ productId: 'Another product with this ID already exists.' });
-          return;
+    setIsSubmitting(true);
+    try {
+      const isEdit = formMode === 'edit';
+      const endpoint = isEdit
+        ? `/api/admin/products/${encodeURIComponent(editingOriginalId)}`
+        : '/api/admin/products';
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const response = await apiFetch(endpoint, {
+        method,
+        body: JSON.stringify(formattedProduct)
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || !result.success) {
+        if (result.errors && typeof result.errors === 'object') {
+          setFormErrors(result.errors);
+        } else {
+          setFormErrors({ general: result.message || 'Failed to save product.' });
         }
-      }
-
-      setProductsList((prev) =>
-        prev.map((item) =>
-          item.productId === editingOriginalId ? formattedProduct : item
-        )
-      );
-
-      if (setNotification) {
-        setNotification({
-          type: 'success',
-          text: `Product "${formattedProduct.name}" updated successfully.`
-        });
-      }
-    } else {
-      // Validate uniqueness of new product ID
-      const conflict = productsList.some((p) => p.productId === formattedProduct.productId);
-      if (conflict) {
-        setFormErrors({ productId: 'A product with this ID already exists.' });
         return;
       }
 
-      setProductsList((prev) => [formattedProduct, ...prev]);
+      const savedProduct = result.data || formattedProduct;
 
-      if (setNotification) {
-        setNotification({
-          type: 'success',
-          text: `Product "${formattedProduct.name}" added to catalog.`
-        });
+      if (isEdit) {
+        setProductsList((prev) =>
+          prev.map((item) =>
+            item.productId === editingOriginalId ? savedProduct : item
+          )
+        );
+
+        if (setNotification) {
+          setNotification({
+            type: 'success',
+            text: `Product "${savedProduct.name}" updated successfully.`
+          });
+        }
+      } else {
+        setProductsList((prev) => [savedProduct, ...prev]);
+
+        if (setNotification) {
+          setNotification({
+            type: 'success',
+            text: `Product "${savedProduct.name}" added to catalog.`
+          });
+        }
       }
-    }
 
-    handleCloseModal();
+      handleCloseModal();
+    } catch (err) {
+      setFormErrors({ general: err.message || 'An unexpected error occurred while saving product.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Delete product with confirmation
-  const handleDeleteProduct = (productId, productName) => {
+  // Delete product with confirmation via backend API
+  const handleDeleteProduct = async (productId, productName) => {
     const isConfirmed = window.confirm(
       `Are you sure you want to delete "${productName}" (ID: ${productId}) from the catalog?`
     );
     if (!isConfirmed) return;
 
-    setProductsList((prev) => prev.filter((item) => item.productId !== productId));
-    if (setNotification) {
-      setNotification({
-        type: 'success',
-        text: `Product "${productName}" was removed from the catalog.`
+    try {
+      const response = await apiFetch(`/api/admin/products/${encodeURIComponent(productId)}`, {
+        method: 'DELETE'
       });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || !result.success) {
+        if (setNotification) {
+          setNotification({
+            type: 'error',
+            text: result.message || `Failed to delete "${productName}".`
+          });
+        }
+        return;
+      }
+
+      setProductsList((prev) => prev.filter((item) => item.productId !== productId));
+      if (setNotification) {
+        setNotification({
+          type: 'success',
+          text: `Product "${productName}" was removed from the catalog.`
+        });
+      }
+    } catch (err) {
+      if (setNotification) {
+        setNotification({
+          type: 'error',
+          text: err.message || `Failed to delete product "${productName}".`
+        });
+      }
     }
   };
 
@@ -475,6 +507,11 @@ const Products = ({
             </div>
 
             <form onSubmit={handleSubmit} className="admin-modal-form" noValidate>
+              {formErrors.general && (
+                <div className="admin-form-error-banner" style={{ padding: '0.65rem', marginBottom: '0.9rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#b91c1c', fontSize: '0.85rem' }}>
+                  {formErrors.general}
+                </div>
+              )}
               {/* Field 1: Product ID */}
               <div className="admin-form-group">
                 <label htmlFor="modal-product-id" className="admin-form-label">
@@ -561,7 +598,7 @@ const Products = ({
                       <input
                         ref={firstImageFileRef}
                         type="file"
-                        accept="image/*"
+                        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                         className="admin-hidden-file-input"
                         onChange={(e) => handleFileUpload(e, 'firstImageUrl')}
                       />
@@ -571,7 +608,7 @@ const Products = ({
                           <polyline points="17 8 12 3 7 8" />
                           <line x1="12" y1="3" x2="12" y2="15" />
                         </svg>
-                        Upload
+                        {uploadingField === 'firstImageUrl' ? 'Uploading...' : 'Upload'}
                       </span>
                     </label>
                   </div>
@@ -624,7 +661,7 @@ const Products = ({
                       <input
                         ref={hoverImageFileRef}
                         type="file"
-                        accept="image/*"
+                        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                         className="admin-hidden-file-input"
                         onChange={(e) => handleFileUpload(e, 'hoverImageUrl')}
                       />
@@ -634,7 +671,7 @@ const Products = ({
                           <polyline points="17 8 12 3 7 8" />
                           <line x1="12" y1="3" x2="12" y2="15" />
                         </svg>
-                        Upload
+                        {uploadingField === 'hoverImageUrl' ? 'Uploading...' : 'Upload'}
                       </span>
                     </label>
                   </div>
@@ -700,8 +737,8 @@ const Products = ({
                 >
                   Cancel
                 </button>
-                <button type="submit" className="admin-btn-wine">
-                  {formMode === 'edit' ? 'Update Product' : 'Add Product'}
+                <button type="submit" className="admin-btn-wine" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : formMode === 'edit' ? 'Update Product' : 'Add Product'}
                 </button>
               </div>
             </form>

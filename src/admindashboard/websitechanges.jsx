@@ -14,13 +14,15 @@ import {
   BANNER_RECOMMENDED_SPECS,
   DEFAULT_BANNER_CONFIG,
   validateBannerForm,
-  validateBannerImageFile,
   getPublishedBanner,
   getDraftBanner,
+  fetchPublishedBanner,
+  fetchDraftBanner,
   saveDraftBanner,
   publishBanner,
   resetBannerDefaults
 } from '../data/bannerContent';
+import { uploadImageFile } from '../utils/api';
 
 // Preset saree imagery available within the project for one-click selection
 const PRESET_BANNER_IMAGES = [
@@ -48,7 +50,6 @@ export default function WebsiteChanges({ setNotification = () => {} }) {
 
   // File upload input references
   const fileInputRef = useRef(null);
-  const mobileFileInputRef = useRef(null);
 
   // Compute if current editing state has unsaved differences from published version
   const isDirty = useMemo(() => {
@@ -67,12 +68,22 @@ export default function WebsiteChanges({ setNotification = () => {} }) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
 
-  // Sync draft and published data on initial load
+  // Sync draft and published data from backend API on initial load
   useEffect(() => {
-    const pub = getPublishedBanner();
-    const draft = getDraftBanner();
-    setPublishedVersion(pub);
-    setFormData(draft);
+    let isMounted = true;
+    Promise.all([fetchPublishedBanner(), fetchDraftBanner()])
+      .then(([pub, draft]) => {
+        if (isMounted) {
+          setPublishedVersion(pub);
+          setFormData(draft);
+        }
+      })
+      .catch((err) => {
+        console.warn('[WebsiteChanges] Error loading banner data from server:', err);
+      });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Form field change handler
@@ -92,42 +103,31 @@ export default function WebsiteChanges({ setNotification = () => {} }) {
     }
   };
 
-  // Image file upload handler with validation
-  const handleFileUpload = (e, targetField = 'desktopImage') => {
+  // Safe image file upload handler with magic bytes & server-side validation
+  const handleFileUpload = async (e, targetField = 'desktopImage') => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
-    const validation = validateBannerImageFile(file);
-    if (!validation.isValid) {
-      setNotification({
-        type: 'error',
-        message: validation.error || 'Failed to upload image.'
-      });
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      handleFieldChange(targetField, reader.result);
+    try {
+      const uploadedUrl = await uploadImageFile(file);
+      handleFieldChange(targetField, uploadedUrl);
       setNotification({
         type: 'success',
-        message: `Image "${file.name}" loaded successfully into preview.`
+        message: `Image "${file.name}" uploaded successfully to server.`
       });
-    };
-    reader.onerror = () => {
+    } catch (err) {
       setNotification({
         type: 'error',
-        message: 'Could not read image file. Please try another image.'
+        message: err.message || 'Failed to upload image.'
       });
-    };
-    reader.readAsDataURL(file);
-
-    // Reset input value so re-selecting same file triggers onChange
-    e.target.value = '';
+    } finally {
+      // Reset input value so re-selecting same file triggers onChange
+      e.target.value = '';
+    }
   };
 
-  // Save current editing state as a draft
-  const handleSaveDraft = () => {
+  // Save current editing state as a draft in the backend
+  const handleSaveDraft = async () => {
     const validation = validateBannerForm(formData);
     if (!validation.isValid) {
       setFormErrors(validation.errors);
@@ -138,22 +138,25 @@ export default function WebsiteChanges({ setNotification = () => {} }) {
       return;
     }
 
-    const ok = saveDraftBanner(formData);
+    setIsSubmitting(true);
+    const ok = await saveDraftBanner(formData);
+    setIsSubmitting(false);
+
     if (ok) {
       setNotification({
         type: 'success',
-        message: 'Draft saved successfully. Customer storefront remains unchanged until published.'
+        message: 'Draft saved successfully to database. Storefront remains unchanged until published.'
       });
     } else {
       setNotification({
         type: 'error',
-        message: 'Unable to save draft into storage.'
+        message: 'Unable to save draft to server.'
       });
     }
   };
 
-  // Execute publication to live storefront
-  const handleExecutePublish = () => {
+  // Execute publication to live storefront via backend
+  const handleExecutePublish = async () => {
     const validation = validateBannerForm(formData);
     if (!validation.isValid) {
       setFormErrors(validation.errors);
@@ -166,7 +169,7 @@ export default function WebsiteChanges({ setNotification = () => {} }) {
     }
 
     setIsSubmitting(true);
-    const success = publishBanner(formData);
+    const success = await publishBanner(formData);
     setIsSubmitting(false);
     setConfirmModal(null);
 
@@ -179,14 +182,14 @@ export default function WebsiteChanges({ setNotification = () => {} }) {
     } else {
       setNotification({
         type: 'error',
-        message: 'Failed to publish banner changes.'
+        message: 'Failed to publish banner changes to server.'
       });
     }
   };
 
   // Discard unsaved changes and restore to last saved published version
-  const handleExecuteCancel = () => {
-    const pub = getPublishedBanner();
+  const handleExecuteCancel = async () => {
+    const pub = await fetchPublishedBanner();
     setFormData(pub);
     setFormErrors({});
     setConfirmModal(null);
@@ -197,8 +200,10 @@ export default function WebsiteChanges({ setNotification = () => {} }) {
   };
 
   // Restore factory original default banner configuration
-  const handleExecuteRestoreDefault = () => {
-    const ok = resetBannerDefaults();
+  const handleExecuteRestoreDefault = async () => {
+    setIsSubmitting(true);
+    const ok = await resetBannerDefaults();
+    setIsSubmitting(false);
     setConfirmModal(null);
     if (ok) {
       setFormData(DEFAULT_BANNER_CONFIG);

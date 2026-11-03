@@ -4,8 +4,10 @@ import SareeHero from './components/SareeHero';
 import Footer from './components/Footer';
 import AboutPage from './components/AboutPage';
 import ContactUs from './components/ContactUs';
+import OurCollections from './components/our-collections';
 import AdminLogin from './admindashboard/AdminLogin';
 import AdminDashboard from './admindashboard/AdminDashboard';
+import { apiFetch, clearAdminSession, getAdminToken } from './utils/api';
 import silkBanner from './assets/silk-sarees-banner1.png';
 import pattuBanner from './assets/pattu-saree-banner1.png';
 import designerBanner from './assets/desginer_sarees-banner1.png';
@@ -300,20 +302,32 @@ const occasions = [
 
 const parseViewFromLocation = () => {
   if (typeof window === 'undefined') return 'home';
-  const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
+  const rawPath = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
   const hash = window.location.hash.toLowerCase().replace(/\/+$/, '') || '';
+  let path = rawPath;
+  try {
+    path = decodeURIComponent(rawPath);
+  } catch {
+    path = rawPath;
+  }
+  let decodedHash = hash;
+  try {
+    decodedHash = decodeURIComponent(hash);
+  } catch {
+    decodedHash = hash;
+  }
 
   // 1. Admin Dashboard routes (/admindashboard)
   const dashboardPaths = ['/admindashboard', '/admin/dashboard', '/admin-dashboard', '/dashboard'];
   const dashboardHashes = ['#admindashboard', '#admin-dashboard', '#/admin-dashboard', '#/admin/dashboard'];
-  if (dashboardPaths.includes(path) || dashboardHashes.includes(hash)) {
+  if (dashboardPaths.includes(path) || dashboardPaths.includes(rawPath) || dashboardHashes.includes(hash) || dashboardHashes.includes(decodedHash)) {
     return 'admin-dashboard';
   }
 
   // 2. Admin Login routes (/admin)
   const loginPaths = ['/admin', '/admin-login', '/admin/login'];
   const loginHashes = ['#admin', '#admin-login', '#/admin-login', '#/admin/login'];
-  if (loginPaths.includes(path) || loginHashes.includes(hash)) {
+  if (loginPaths.includes(path) || loginPaths.includes(rawPath) || loginHashes.includes(hash) || loginHashes.includes(decodedHash)) {
     return 'admin-login';
   }
 
@@ -321,9 +335,14 @@ const parseViewFromLocation = () => {
   if (
     path === '/about-us' ||
     path === '/about' ||
+    path === '/about us' ||
+    rawPath === '/about%20us' ||
     hash === '#about-us' ||
     hash === '#/about-us' ||
-    hash === '#about'
+    hash === '#about' ||
+    hash === '#about us' ||
+    hash === '#about%20us' ||
+    decodedHash === '#about us'
   ) {
     return 'about';
   }
@@ -332,11 +351,32 @@ const parseViewFromLocation = () => {
   if (
     path === '/contact-us' ||
     path === '/contact' ||
+    path === '/contact us' ||
+    rawPath === '/contact%20us' ||
     hash === '#contact-us' ||
     hash === '#/contact-us' ||
-    hash === '#contact'
+    hash === '#contact' ||
+    hash === '#contact us' ||
+    hash === '#contact%20us' ||
+    decodedHash === '#contact us'
   ) {
     return 'contact';
+  }
+
+  // Our Collections routes
+  if (
+    path === '/our-collections' ||
+    path === '/collections' ||
+    path === '/our collections' ||
+    rawPath === '/our%20collections' ||
+    hash === '#our-collections' ||
+    hash === '#/our-collections' ||
+    hash === '#collections' ||
+    hash === '#our collections' ||
+    hash === '#our%20collections' ||
+    decodedHash === '#our collections'
+  ) {
+    return 'collections';
   }
 
   return 'home';
@@ -344,11 +384,11 @@ const parseViewFromLocation = () => {
 
 function App() {
   const [currentView, setCurrentView] = useState(() => parseViewFromLocation());
-  const [authToken, setAuthToken] = useState(() => {
-    return typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
-  });
+  const [authToken, setAuthToken] = useState(() => getAdminToken());
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState(() => (parseViewFromLocation() === 'admin-dashboard' && Boolean(getAdminToken())));
+  const [authVerified, setAuthVerified] = useState(false);
   const [selectedDrapeId, setSelectedDrapeId] = useState('pattu');
-  const [isInView, setIsInView] = useState(true);
+  const [isInView] = useState(true);
   const [wishlist, setWishlist] = useState({});
   const [touchActiveId, setTouchActiveId] = useState(null);
   const [selectedBlouseCat, setSelectedBlouseCat] = useState('All Designs');
@@ -360,22 +400,99 @@ function App() {
   const activeDrape = featuredDrapes.find((d) => d.id === selectedDrapeId) || featuredDrapes[0];
 
   useEffect(() => {
+    // Sanitize redundant hashes from the browser address bar on load
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
+      const hash = window.location.hash.toLowerCase().replace(/\/+$/, '') || '';
+
+      if (hash === '#about-us' || hash === '#/about-us' || hash === '#about' || path === '/about-us') {
+        if (window.location.hash) {
+          window.history.replaceState({}, '', '/about-us');
+        }
+      } else if (hash === '#contact-us' || hash === '#/contact-us' || hash === '#contact' || path === '/contact-us') {
+        if (window.location.hash) {
+          window.history.replaceState({}, '', '/contact-us');
+        }
+      } else if (hash === '#our-collections' || hash === '#/our-collections' || hash === '#collections' || path === '/our-collections') {
+        if (window.location.hash) {
+          window.history.replaceState({}, '', '/our-collections');
+        }
+      } else if (hash === '#home' || hash === '#/home') {
+        window.history.replaceState({}, '', '/');
+      }
+    }
+
     const handleLocationChange = () => {
       setCurrentView(parseViewFromLocation());
-      setAuthToken(typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null);
+      setAuthToken(getAdminToken());
+    };
+
+    const handleAuthExpired = () => {
+      clearAdminSession();
+      setAuthToken(null);
+      setAuthVerified(false);
+      const locView = parseViewFromLocation();
+      if (locView === 'admin-dashboard' || locView === 'admin-login') {
+        setCurrentView('admin-login');
+      }
     };
 
     window.addEventListener('hashchange', handleLocationChange);
     window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('admin-auth-expired', handleAuthExpired);
     return () => {
       window.removeEventListener('hashchange', handleLocationChange);
       window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('admin-auth-expired', handleAuthExpired);
     };
   }, []);
 
+  // Verify stored admin token against GET /api/auth/verify before granting access
+  useEffect(() => {
+    let isMounted = true;
+    if (currentView === 'admin-dashboard' && authToken) {
+      apiFetch('/api/auth/verify')
+        .then((res) => {
+          if (!res.ok) throw new Error('Verification request failed');
+          return res.json();
+        })
+        .then((data) => {
+          if (isMounted) {
+            if (data?.data?.valid) {
+              setAuthVerified(true);
+            } else {
+              clearAdminSession();
+              setAuthToken(null);
+              setAuthVerified(false);
+            }
+          }
+        })
+        .catch(() => {
+          if (isMounted) {
+            clearAdminSession();
+            setAuthToken(null);
+            setAuthVerified(false);
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setIsVerifyingAuth(false);
+          }
+        });
+    } else if (currentView !== 'admin-dashboard') {
+      setTimeout(() => {
+        if (isMounted) setIsVerifyingAuth(false);
+      }, 0);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [currentView, authToken]);
+
   const handleLoginSuccess = (token) => {
-    const activeToken = token || (typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null);
+    const activeToken = token || getAdminToken();
     setAuthToken(activeToken);
+    setAuthVerified(true);
     setCurrentView('admin-dashboard');
     if (typeof window !== 'undefined') {
       window.history.pushState({}, '', '/admindashboard');
@@ -384,20 +501,26 @@ function App() {
   };
 
   const handleNavigate = (view, targetHref = null) => {
-    if (view === 'about') {
+    if (view === 'about' || view === '/about-us' || view === '#about-us') {
       setCurrentView('about');
       if (typeof window !== 'undefined') {
         window.history.pushState({}, '', '/about-us');
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (view === 'contact') {
+    } else if (view === 'contact' || view === '/contact-us' || view === '#contact-us') {
       setCurrentView('contact');
       if (typeof window !== 'undefined') {
         window.history.pushState({}, '', '/contact-us');
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (view === 'admin-dashboard') {
-      const activeToken = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
+    } else if (view === 'collections' || view === '/our-collections' || view === '#our-collections') {
+      setCurrentView('collections');
+      if (typeof window !== 'undefined') {
+        window.history.pushState({}, '', '/our-collections');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (view === 'admin-dashboard' || view === '/admindashboard') {
+      const activeToken = getAdminToken();
       setAuthToken(activeToken);
       if (!activeToken) {
         setCurrentView('admin-login');
@@ -411,7 +534,7 @@ function App() {
         }
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (view === 'admin-login') {
+    } else if (view === 'admin-login' || view === '/admin') {
       setCurrentView('admin-login');
       if (typeof window !== 'undefined') {
         window.history.pushState({}, '', '/admin');
@@ -419,16 +542,15 @@ function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       setCurrentView('home');
-      if (targetHref && targetHref !== '#home') {
-        window.location.hash = targetHref;
+      if (typeof window !== 'undefined') {
+        window.history.pushState({}, '', '/');
+      }
+      if (targetHref && targetHref !== '#home' && targetHref !== '/') {
         setTimeout(() => {
           const el = document.querySelector(targetHref);
           if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }, 60);
+        }, 80);
       } else {
-        if (typeof window !== 'undefined') {
-          window.history.pushState({}, '', '/');
-        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
@@ -526,10 +648,6 @@ function App() {
     return () => clearInterval(intervalId);
   }, []);
 
-  useEffect(() => {
-    setIsInView(true);
-  }, []);
-
   const scrollToAbout = () => {
     if (aboutRef.current) {
       aboutRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -562,6 +680,25 @@ function App() {
       );
     }
 
+    if (isVerifyingAuth) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', fontFamily: 'serif', color: '#800020' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '0.85rem' }}>✨</div>
+          <p style={{ letterSpacing: '0.05em', fontSize: '1.05rem', margin: 0 }}>Verifying administrator session...</p>
+        </div>
+      );
+    }
+
+    if (!authVerified) {
+      return (
+        <AdminLogin
+          onLoginSuccess={handleLoginSuccess}
+          onNavigate={handleNavigate}
+          authError="Session expired or invalid. Please sign in again."
+        />
+      );
+    }
+
     if (typeof window !== 'undefined' && (window.location.pathname !== '/admindashboard' || window.location.hash)) {
       window.history.replaceState({}, '', '/admindashboard');
     }
@@ -570,9 +707,9 @@ function App() {
       <AdminDashboard
         onNavigate={handleNavigate}
         onLogout={() => {
-          localStorage.removeItem('adminToken');
-          localStorage.removeItem('adminUser');
+          clearAdminSession();
           setAuthToken(null);
+          setAuthVerified(false);
           handleNavigate('admin-login');
         }}
       />
@@ -584,11 +721,13 @@ function App() {
       {/* Sticky & Transparent Header with Centered Logo & Action Icons */}
       <Navbar currentView={currentView} onNavigate={handleNavigate} />
 
-      {/* View Switcher: About Us Page vs Contact Us Page vs Home Luxury Showcase */}
+      {/* View Switcher: About Us Page vs Contact Us Page vs Our Collections Page vs Home Luxury Showcase */}
       {currentView === 'about' ? (
         <AboutPage onNavigate={handleNavigate} />
       ) : currentView === 'contact' ? (
         <ContactUs onNavigate={handleNavigate} />
+      ) : currentView === 'collections' ? (
+        <OurCollections onNavigate={handleNavigate} />
       ) : (
         <main id="main-content">
           <SareeHero />

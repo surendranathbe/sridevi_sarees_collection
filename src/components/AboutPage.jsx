@@ -4,8 +4,6 @@ import './components.css';
 // Reusing existing project assets
 import heroBannerImg from '../assets/pattu-saree-banner1.png';
 import aboutShowroomImg from '../assets/about-image-2.jpg';
-import storyPortraitImg from '../assets/collections/model_emerald_green.jpg';
-import storyDrapeImg from '../assets/collections/saree_dusty_plum.jpg';
 import blouseCraftImg from '../assets/blouses/blouse_emerald_peacock.jpg';
 import ctaBgImg from '../assets/collections/saree_emerald_green.jpg';
 
@@ -455,7 +453,7 @@ const CraftsmanshipSection = ({ onNavigate }) => {
             <button
               type="button"
               className="craft-cta-button"
-              onClick={() => onNavigate('#our-blouse-collection')}
+              onClick={() => onNavigate('home', '#our-blouse-collection')}
             >
               <span>Explore Blouse Work</span>
               <span className="cta-arrow">&rarr;</span>
@@ -493,7 +491,7 @@ const AboutCTA = ({ onNavigate }) => {
             <button
               type="button"
               className="about-btn-primary"
-              onClick={() => onNavigate('#our-collections')}
+              onClick={() => onNavigate('collections')}
             >
               <span>Explore Collection</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -505,7 +503,7 @@ const AboutCTA = ({ onNavigate }) => {
             <button
               type="button"
               className="about-btn-secondary"
-              onClick={() => onNavigate('#contact-us')}
+              onClick={() => onNavigate('contact')}
             >
               <span>Visit Store</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

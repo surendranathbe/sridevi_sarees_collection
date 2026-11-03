@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './components.css';
-import { getPublishedBanner, BANNER_UPDATE_EVENT } from '../data/bannerContent';
+import { getPublishedBanner, BANNER_UPDATE_EVENT, fetchPublishedBanner } from '../data/bannerContent';
 
 const sarees = [
   {
@@ -129,8 +129,19 @@ export default function SareeHero() {
   const touchStartXRef = useRef(0);
   const touchEndXRef = useRef(0);
 
-  // Synchronize banner when updated via Website Changes CMS or storage event
+  // Synchronize banner when updated via Website Changes CMS or fetched from backend
   useEffect(() => {
+    let isMounted = true;
+    fetchPublishedBanner()
+      .then((banner) => {
+        if (isMounted && banner) {
+          setPublishedBanner(banner);
+        }
+      })
+      .catch(() => {
+        // Fallback already populated via getPublishedBanner
+      });
+
     const handleBannerUpdate = (e) => {
       if (e && e.detail) {
         setPublishedBanner(e.detail);
@@ -139,17 +150,10 @@ export default function SareeHero() {
       }
     };
 
-    const handleStorage = (e) => {
-      if (e.key === 'sridevi_published_banner') {
-        setPublishedBanner(getPublishedBanner());
-      }
-    };
-
     window.addEventListener(BANNER_UPDATE_EVENT, handleBannerUpdate);
-    window.addEventListener('storage', handleStorage);
     return () => {
+      isMounted = false;
       window.removeEventListener(BANNER_UPDATE_EVENT, handleBannerUpdate);
-      window.removeEventListener('storage', handleStorage);
     };
   }, []);
 
@@ -178,13 +182,19 @@ export default function SareeHero() {
   useEffect(() => {
     if (currentIndex === displayIndex) return;
 
-    setIsExiting(true);
-    const timer = setTimeout(() => {
-      setDisplayIndex(currentIndex);
-      setIsExiting(false);
-    }, 180);
+    let innerTimer;
+    const exitTimer = setTimeout(() => {
+      setIsExiting(true);
+      innerTimer = setTimeout(() => {
+        setDisplayIndex(currentIndex);
+        setIsExiting(false);
+      }, 180);
+    }, 0);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(exitTimer);
+      clearTimeout(innerTimer);
+    };
   }, [currentIndex, displayIndex]);
 
   // Preload all high-res images to guarantee zero-latency transitions

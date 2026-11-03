@@ -27,6 +27,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRateLimitExceeded(RateLimitExceededException ex) {
+        log.warn("Rate limit exceeded: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
         log.warn("Access denied: {}", ex.getMessage());
@@ -50,9 +57,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({org.springframework.dao.DataAccessException.class, com.mongodb.MongoException.class})
     public ResponseEntity<ApiResponse<Void>> handleDatabaseException(Exception ex) {
-        log.warn("MongoDB database operation failed: {}", ex.getMessage());
+        log.error("MongoDB database operation failed: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(ApiResponse.error("Database connection unavailable. If using MongoDB Atlas, please ensure your IP address is whitelisted in MongoDB Atlas Network Access."));
+                .body(ApiResponse.error("Database service temporarily unavailable. Please try again later."));
     }
 
     @ExceptionHandler(Exception.class)

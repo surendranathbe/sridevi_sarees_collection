@@ -1,14 +1,13 @@
+import { apiFetch } from '../utils/api';
+
 /**
  * Sridevi Sarees & Collections - Website Changes & Banner Configuration Data
  * File: src/data/bannerContent.js
  * 
- * Provides shared state, validation, default presets, and persistence methods (localStorage + events)
+ * Provides shared state, validation, default presets, and persistence methods (REST API + events)
  * connecting both the Admin Website Changes editor and the storefront SareeHero banner component.
  */
 
-// Storage keys for persistence
-export const STORAGE_KEY_PUBLISHED = 'sridevi_published_banner';
-export const STORAGE_KEY_DRAFT = 'sridevi_draft_banner';
 export const BANNER_UPDATE_EVENT = 'sridevi-banner-updated';
 
 // 10 Customer-Facing Website Sections supported by the CMS Architecture
@@ -221,95 +220,118 @@ export function validateBannerImageFile(file) {
 }
 
 /**
- * Reads published banner configuration from localStorage with fallback to default.
- * @returns {object}
+ * Reads published banner configuration from the public backend endpoint with fallback to DEFAULT_BANNER_CONFIG.
+ * @returns {Promise<object>}
  */
-export function getPublishedBanner() {
+export async function fetchPublishedBanner() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_PUBLISHED);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return { ...DEFAULT_BANNER_CONFIG, ...parsed };
+    const response = await apiFetch('/api/banner');
+    if (response.ok) {
+      const result = await response.json();
+      if (result.success && result.data) {
+        return { ...DEFAULT_BANNER_CONFIG, ...result.data };
+      }
     }
   } catch (err) {
-    console.warn('[WebsiteChanges] Failed to parse published banner from storage:', err);
+    console.warn('[WebsiteChanges] Failed to load published banner from backend, using defaults:', err);
   }
   return { ...DEFAULT_BANNER_CONFIG };
 }
 
 /**
- * Reads draft banner configuration from localStorage with fallback to published or default.
+ * Synchronous getter returning default banner config for initial component mount.
+ * @returns {object}
+ */
+export function getPublishedBanner() {
+  return { ...DEFAULT_BANNER_CONFIG };
+}
+
+/**
+ * Reads draft banner configuration from admin endpoint with fallback to published banner.
+ * @returns {Promise<object>}
+ */
+export async function fetchDraftBanner() {
+  try {
+    const response = await apiFetch('/api/admin/banner/draft');
+    if (response.ok) {
+      const result = await response.json();
+      if (result.success && result.data) {
+        return { ...DEFAULT_BANNER_CONFIG, ...result.data };
+      }
+    }
+  } catch (err) {
+    console.warn('[WebsiteChanges] Failed to load draft banner from backend:', err);
+  }
+  return fetchPublishedBanner();
+}
+
+/**
+ * Synchronous getter returning default banner config for draft initialization.
  * @returns {object}
  */
 export function getDraftBanner() {
+  return { ...DEFAULT_BANNER_CONFIG };
+}
+
+/**
+ * Saves current banner data as draft in the backend database.
+ * @param {object} bannerData
+ * @returns {Promise<boolean>}
+ */
+export async function saveDraftBanner(bannerData) {
   try {
-    const rawDraft = localStorage.getItem(STORAGE_KEY_DRAFT);
-    if (rawDraft) {
-      const parsed = JSON.parse(rawDraft);
-      return { ...DEFAULT_BANNER_CONFIG, ...parsed };
+    const response = await apiFetch('/api/admin/banner/draft', {
+      method: 'POST',
+      body: JSON.stringify(bannerData)
+    });
+    return response.ok;
+  } catch (err) {
+    console.error('[WebsiteChanges] Failed to save draft banner to server:', err);
+    return false;
+  }
+}
+
+/**
+ * Publishes banner data via admin endpoint, notifying active storefront components.
+ * @param {object} bannerData
+ * @returns {Promise<boolean>}
+ */
+export async function publishBanner(bannerData) {
+  try {
+    const response = await apiFetch('/api/admin/banner/publish', {
+      method: 'POST',
+      body: JSON.stringify(bannerData)
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      const updatedBanner = result.data || bannerData;
+      // Notify active components immediately
+      window.dispatchEvent(new CustomEvent(BANNER_UPDATE_EVENT, { detail: updatedBanner }));
+      return true;
     }
+    return false;
   } catch (err) {
-    console.warn('[WebsiteChanges] Failed to parse draft banner from storage:', err);
-  }
-  return getPublishedBanner();
-}
-
-/**
- * Saves current banner data as draft.
- * @param {object} bannerData
- * @returns {boolean}
- */
-export function saveDraftBanner(bannerData) {
-  try {
-    const payload = {
-      ...bannerData,
-      isDraft: true,
-      lastUpdated: new Date().toISOString()
-    };
-    localStorage.setItem(STORAGE_KEY_DRAFT, JSON.stringify(payload));
-    return true;
-  } catch (err) {
-    console.error('[WebsiteChanges] Failed to save draft banner:', err);
+    console.error('[WebsiteChanges] Failed to publish banner to server:', err);
     return false;
   }
 }
 
 /**
- * Publishes banner data, persisting to published storage, clearing draft,
- * and dispatching a browser-wide event so the storefront updates immediately.
- * @param {object} bannerData
- * @returns {boolean}
+ * Restores banner configuration to factory defaults in the backend database.
+ * @returns {Promise<boolean>}
  */
-export function publishBanner(bannerData) {
+export async function resetBannerDefaults() {
   try {
-    const payload = {
-      ...bannerData,
-      isDraft: false,
-      publishedAt: new Date().toISOString(),
-      lastUpdated: new Date().toISOString()
-    };
-    localStorage.setItem(STORAGE_KEY_PUBLISHED, JSON.stringify(payload));
-    localStorage.removeItem(STORAGE_KEY_DRAFT);
+    const response = await apiFetch('/api/admin/banner/reset', {
+      method: 'POST'
+    });
 
-    // Notify all active components (including SareeHero in customer view)
-    window.dispatchEvent(new CustomEvent(BANNER_UPDATE_EVENT, { detail: payload }));
-    return true;
-  } catch (err) {
-    console.error('[WebsiteChanges] Failed to publish banner:', err);
+    if (response.ok) {
+      window.dispatchEvent(new CustomEvent(BANNER_UPDATE_EVENT, { detail: DEFAULT_BANNER_CONFIG }));
+      return true;
+    }
     return false;
-  }
-}
-
-/**
- * Restores banner configuration to factory defaults.
- * @returns {boolean}
- */
-export function resetBannerDefaults() {
-  try {
-    localStorage.removeItem(STORAGE_KEY_DRAFT);
-    localStorage.setItem(STORAGE_KEY_PUBLISHED, JSON.stringify(DEFAULT_BANNER_CONFIG));
-    window.dispatchEvent(new CustomEvent(BANNER_UPDATE_EVENT, { detail: DEFAULT_BANNER_CONFIG }));
-    return true;
   } catch (err) {
     console.error('[WebsiteChanges] Failed to reset banner defaults:', err);
     return false;

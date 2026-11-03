@@ -22,6 +22,7 @@ public class MongoConfig {
 
     private static final Logger log = LoggerFactory.getLogger(MongoConfig.class);
     public static final String DATABASE_NAME = "sridevi_collections_db";
+    public static final String LOCAL_FALLBACK_URI = "mongodb://localhost:27017/sridevi_collections_db";
 
     @Value("${spring.data.mongodb.uri:}")
     private String configuredUri;
@@ -30,13 +31,35 @@ public class MongoConfig {
     @Primary
     public MongoClient mongoClient() {
         String uri = resolveMongoUri();
-        if (uri == null || uri.isBlank()) {
-            log.warn("MONGODB_URI is not set. A placeholder client is initialized; database calls will fail until MONGODB_URI is configured.");
-            return MongoClients.create("mongodb://localhost:27017");
-        }
+        MongoClient client = buildClient(uri);
 
+        // Verify that the connection and credentials work
         try {
-            ConnectionString connectionString = new ConnectionString(uri);
+            client.getDatabase(DATABASE_NAME).runCommand(new org.bson.Document("ping", 1));
+            log.info("Initialized MongoDB client targeting database: '{}' ({})", DATABASE_NAME, sanitizeUri(uri));
+            return client;
+        } catch (Exception e) {
+            log.warn("Failed to connect or authenticate with configured MongoDB URI [{}]: {}. Attempting fallback to local MongoDB...",
+                    sanitizeUri(uri), e.getMessage());
+            try {
+                client.close();
+            } catch (Exception ignored) {}
+
+            try {
+                MongoClient localClient = buildClient(LOCAL_FALLBACK_URI);
+                localClient.getDatabase(DATABASE_NAME).runCommand(new org.bson.Document("ping", 1));
+                log.info("Successfully connected to local MongoDB at localhost:27017/{}", DATABASE_NAME);
+                return localClient;
+            } catch (Exception localEx) {
+                log.warn("Local MongoDB fallback also failed: {}. Continuing with configured client.", localEx.getMessage());
+                return buildClient(uri);
+            }
+        }
+    }
+
+    private MongoClient buildClient(String connectionUri) {
+        try {
+            ConnectionString connectionString = new ConnectionString(connectionUri);
             MongoClientSettings settings = MongoClientSettings.builder()
                     .applyConnectionString(connectionString)
                     .applyToSocketSettings(builder -> builder
@@ -45,11 +68,9 @@ public class MongoConfig {
                     .applyToClusterSettings(builder -> builder
                             .serverSelectionTimeout(5000, TimeUnit.MILLISECONDS))
                     .build();
-
-            log.info("Initialized MongoDB client targeting database: '{}'", DATABASE_NAME);
             return MongoClients.create(settings);
-        } catch (Exception e) {
-            log.error("Failed to parse MONGODB_URI: {}", e.getMessage());
+        } catch (Exception ex) {
+            log.error("Failed to build MongoClient for URI [{}]: {}", sanitizeUri(connectionUri), ex.getMessage());
             return MongoClients.create("mongodb://localhost:27017");
         }
     }
@@ -69,15 +90,29 @@ public class MongoConfig {
     public String resolveMongoUri() {
         String envUri = System.getenv("MONGODB_URI");
         if (envUri != null && !envUri.isBlank()) {
-            return envUri.trim();
+            return validateOrFallback(envUri.trim());
         }
         String sysProp = System.getProperty("MONGODB_URI");
         if (sysProp != null && !sysProp.isBlank()) {
-            return sysProp.trim();
+            return validateOrFallback(sysProp.trim());
         }
         if (configuredUri != null && !configuredUri.isBlank()) {
-            return configuredUri.trim();
+            return validateOrFallback(configuredUri.trim());
         }
-        return null;
+        return LOCAL_FALLBACK_URI;
+    }
+
+    private String validateOrFallback(String uri) {
+        if (uri.contains("<") || uri.contains(">") || uri.contains("YOUR_NEW_URL_ENCODED_PASSWORD") || uri.contains("<db_password>")) {
+            log.warn("Detected unpopulated placeholder in MONGODB_URI: '{}'. Falling back to local MongoDB ({}).",
+                    sanitizeUri(uri), LOCAL_FALLBACK_URI);
+            return LOCAL_FALLBACK_URI;
+        }
+        return uri;
+    }
+
+    private String sanitizeUri(String uri) {
+        if (uri == null) return "null";
+        return uri.replaceAll(":[^@/]+@", ":****@");
     }
 }
