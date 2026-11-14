@@ -1,0 +1,14 @@
+node_modules/
+dist/
+dist-ssr/
+backend/target/
+target/
+.git/
+.env*
+*.env
+logs/
+*.log
+uploads/
+backend/uploads/
+.vscode/
+.idea/
