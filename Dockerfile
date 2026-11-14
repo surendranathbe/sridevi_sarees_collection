@@ -33,3 +33,4 @@ EXPOSE 8080
 
 # Run with container-aware memory allocation (optimized for Render 512MB RAM tier)
 ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
+
