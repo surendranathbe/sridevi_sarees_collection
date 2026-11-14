@@ -21,8 +21,10 @@ RUN ./mvnw clean package -DskipTests
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# Create a dedicated non-root user for security
-RUN addgroup --system spring && adduser --system --ingroup spring spring
+# Create a dedicated non-root user and prepare uploads directory with write permissions
+RUN addgroup --system spring && adduser --system --ingroup spring spring && \
+    mkdir -p /app/uploads && chown -R spring:spring /app
+
 USER spring:spring
 
 # Copy built JAR from build stage

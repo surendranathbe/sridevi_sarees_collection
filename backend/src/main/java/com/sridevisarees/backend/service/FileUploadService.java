@@ -23,13 +23,23 @@ public class FileUploadService {
     private final Path uploadLocation;
 
     public FileUploadService(@Value("${app.upload.dir:uploads}") String uploadDir) {
-        this.uploadLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path primary = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path resolved = primary;
         try {
-            Files.createDirectories(this.uploadLocation);
-            log.info("FileUploadService initialized. Upload directory: {}", this.uploadLocation);
-        } catch (IOException e) {
-            throw new IllegalStateException("Could not initialize upload storage directory: " + this.uploadLocation, e);
+            Files.createDirectories(primary);
+            log.info("FileUploadService initialized. Upload directory: {}", primary);
+        } catch (Exception e) {
+            log.warn("Could not initialize primary upload directory [{}]: {}. Falling back to system temp directory.", primary, e.getMessage());
+            try {
+                Path fallback = Paths.get(System.getProperty("java.io.tmpdir"), "uploads").toAbsolutePath().normalize();
+                Files.createDirectories(fallback);
+                resolved = fallback;
+                log.info("FileUploadService initialized with fallback temp directory: {}", fallback);
+            } catch (Exception fallbackEx) {
+                log.error("Failed to initialize fallback upload directory: {}", fallbackEx.getMessage());
+            }
         }
+        this.uploadLocation = resolved;
     }
 
     public static class UploadResult {
