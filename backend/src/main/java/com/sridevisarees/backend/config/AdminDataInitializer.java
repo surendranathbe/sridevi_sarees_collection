@@ -33,13 +33,6 @@ public class AdminDataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
-            // Check if any admin account already exists
-            long existingAdminCount = adminRepository.count();
-            if (existingAdminCount > 0) {
-                log.info("Administrator account already exists (count: {}). Skipping initial provisioning.", existingAdminCount);
-                return;
-            }
-
             // Read ADMIN_EMAIL and ADMIN_INITIAL_PASSWORD from environment or property
             String envEmail = System.getenv("ADMIN_EMAIL");
             String email = (envEmail != null && !envEmail.isBlank()) ? envEmail : adminEmailProperty;
@@ -62,7 +55,32 @@ public class AdminDataInitializer implements CommandLineRunner {
                 return;
             }
 
-            // Provision exactly one administrator
+            // If account already exists, synchronize password and status so user is never locked out
+            java.util.Optional<Admin> existingAdminOpt = adminRepository.findByEmailIgnoreCase(trimmedEmail);
+            if (existingAdminOpt.isPresent()) {
+                Admin admin = existingAdminOpt.get();
+                boolean modified = false;
+                if (!admin.isActive()) {
+                    admin.setActive(true);
+                    modified = true;
+                }
+                if (!"ROLE_ADMIN".equals(admin.getRole())) {
+                    admin.setRole("ROLE_ADMIN");
+                    modified = true;
+                }
+                if (!passwordEncoder.matches(trimmedPassword, admin.getPassword())) {
+                    admin.setPassword(passwordEncoder.encode(trimmedPassword));
+                    modified = true;
+                    log.info("Synchronized administrator credentials for '{}' to match configured environment variable.", trimmedEmail);
+                }
+                if (modified) {
+                    adminRepository.save(admin);
+                }
+                log.info("Administrator account '{}' verified and active.", trimmedEmail);
+                return;
+            }
+
+            // Provision new administrator
             String hashedPassword = passwordEncoder.encode(trimmedPassword);
             Admin newAdmin = new Admin(trimmedEmail, hashedPassword, "Store Administrator");
             newAdmin.setRole("ROLE_ADMIN");

@@ -40,7 +40,7 @@ const AdminLogin = ({ onLoginSuccess, onNavigate, authError }) => {
     setIsSubmitting(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const apiUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
       const response = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
@@ -90,14 +90,17 @@ const AdminLogin = ({ onLoginSuccess, onNavigate, authError }) => {
       } else {
         setStatusMessage({
           type: 'error',
-          text: 'Invalid email or password.'
+          text: result?.message || 'Invalid email or password.'
         });
       }
     } catch (err) {
       console.error('Authentication request error:', err);
+      const isConnectionIssue = err?.name === 'TypeError' || String(err?.message || '').toLowerCase().includes('fetch');
       setStatusMessage({
         type: 'error',
-        text: 'Unable to connect to the authentication server. Please try again later.'
+        text: isConnectionIssue
+          ? 'Unable to connect to backend server. If Render is waking up from sleep, please wait 30-50 seconds and try again.'
+          : (err?.message || 'Unable to connect to the authentication server. Please try again.')
       });
     } finally {
       setIsSubmitting(false);
