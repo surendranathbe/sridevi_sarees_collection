@@ -21,12 +21,20 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(false);
 
-        // Allow configured frontend origin (default: http://localhost:5173)
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
-                .map(s -> s.trim())
+        // Add explicit origins (stripping any accidental trailing slashes)
+        Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
                 .filter(s -> !s.isEmpty())
-                .toList();
-        config.setAllowedOrigins(origins);
+                .forEach(origin -> {
+                    String clean = origin.replaceAll("/+$", "");
+                    config.addAllowedOrigin(clean);
+                });
+
+        // Always allow Vercel domains, localhost, and local IP addresses
+        config.addAllowedOriginPattern("https://*.vercel.app");
+        config.addAllowedOriginPattern("https://sridevi-sarees-collection*.vercel.app");
+        config.addAllowedOriginPattern("http://localhost:[*]");
+        config.addAllowedOriginPattern("http://127.0.0.1:[*]");
 
         config.setAllowedHeaders(Arrays.asList(
                 "Origin", "Content-Type", "Accept", "Authorization",
