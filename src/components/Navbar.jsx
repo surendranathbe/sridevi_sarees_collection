@@ -224,12 +224,13 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
               {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
             </button>
 
-            {/* Profile Icon */}
+            {/* Profile Icon (Desktop Admin Console) */}
             <button
               type="button"
               className="nav-icon-btn profile-btn"
-              aria-label="User Account Profile"
-              title="My Account"
+              aria-label="Admin Management Portal"
+              title="Admin Console"
+              onClick={() => onNavigate('admin-login')}
             >
               <svg
                 className="nav-svg-icon"
