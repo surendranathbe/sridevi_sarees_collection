@@ -24,31 +24,10 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(false);
 
-        // Add explicit origins (stripping any accidental trailing slashes)
-        Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .forEach(origin -> {
-                    String clean = origin.replaceAll("/+$", "");
-                    config.addAllowedOrigin(clean);
-                });
-
-        // Always allow Vercel domains, localhost, and local IP addresses
-        config.addAllowedOriginPattern("https://*.vercel.app");
-        config.addAllowedOriginPattern("https://sridevi-sarees-collection*.vercel.app");
-        config.addAllowedOriginPattern("http://localhost:[*]");
-        config.addAllowedOriginPattern("http://127.0.0.1:[*]");
-
-        config.setAllowedHeaders(Arrays.asList(
-                "Origin", "Content-Type", "Accept", "Authorization",
-                "X-Requested-With", "Access-Control-Request-Method",
-                "Access-Control-Request-Headers"
-        ));
-
-        config.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"
-        ));
-
+        // Allow all origins, headers, and methods for stateless REST API
+        config.addAllowedOriginPattern("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
         config.setExposedHeaders(List.of("Authorization"));
         config.setMaxAge(3600L);
 

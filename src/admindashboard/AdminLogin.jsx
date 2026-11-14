@@ -40,17 +40,40 @@ const AdminLogin = ({ onLoginSuccess, onNavigate, authError }) => {
     setIsSubmitting(true);
 
     try {
-      const apiUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
-      const response = await fetch(`${apiUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: emailTrimmed,
-          password: password
-        })
-      });
+      const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+      let usedUrl = configuredApiUrl ? `${configuredApiUrl}/api/auth/login` : '/api/auth/login';
+      let response;
+
+      try {
+        response = await fetch(usedUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: emailTrimmed,
+            password: password
+          })
+        });
+      } catch (firstErr) {
+        // If direct fetch fails (e.g. CORS block or DNS issue), fallback to Vercel proxy rewrite
+        if (configuredApiUrl && !usedUrl.startsWith('/')) {
+          console.warn(`Direct fetch to ${usedUrl} failed (${firstErr?.message}). Retrying via Vercel proxy /api/auth/login...`);
+          usedUrl = '/api/auth/login';
+          response = await fetch(usedUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email: emailTrimmed,
+              password: password
+            })
+          });
+        } else {
+          throw firstErr;
+        }
+      }
 
       const result = await response.json().catch(() => ({}));
 
@@ -95,12 +118,9 @@ const AdminLogin = ({ onLoginSuccess, onNavigate, authError }) => {
       }
     } catch (err) {
       console.error('Authentication request error:', err);
-      const isConnectionIssue = err?.name === 'TypeError' || String(err?.message || '').toLowerCase().includes('fetch');
       setStatusMessage({
         type: 'error',
-        text: isConnectionIssue
-          ? 'Unable to connect to backend server. If Render is waking up from sleep, please wait 30-50 seconds and try again.'
-          : (err?.message || 'Unable to connect to the authentication server. Please try again.')
+        text: `Unable to connect to backend (${err?.message || 'Failed to fetch'}). Please check your connection or wait 30s if Render is starting.`
       });
     } finally {
       setIsSubmitting(false);

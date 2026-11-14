@@ -39,7 +39,7 @@ export const getAdminUser = () => {
  */
 export const apiFetch = async (endpoint, options = {}) => {
   const baseUrl = getApiBaseUrl();
-  const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
+  const primaryUrl = endpoint.startsWith('http://') || endpoint.startsWith('https://')
     ? endpoint
     : `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 
@@ -56,10 +56,24 @@ export const apiFetch = async (endpoint, options = {}) => {
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers
-  });
+  let response;
+  try {
+    response = await fetch(primaryUrl, {
+      ...options,
+      headers
+    });
+  } catch (err) {
+    // Fallback to relative proxy route if direct call to baseUrl fails
+    if (baseUrl && !endpoint.startsWith('http://') && !endpoint.startsWith('https://')) {
+      const relativeUrl = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+      response = await fetch(relativeUrl, {
+        ...options,
+        headers
+      });
+    } else {
+      throw err;
+    }
+  }
 
   if (response.status === 401 && isAdminRoute) {
     clearAdminSession();
