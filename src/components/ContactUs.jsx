@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import heroBannerImg from '../assets/silk-sarees-banner1.png';
+import heroBannerImg from '../assets/silk-sarees-banner1.jpg';
 import {
   dispatchCustomerInquiry,
   generateWhatsAppMessage,

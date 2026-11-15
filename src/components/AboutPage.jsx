@@ -2,20 +2,20 @@ import React, { useState, useEffect } from 'react';
 import './components.css';
 
 // Reusing existing project assets
-import heroBannerImg from '../assets/pattu-saree-banner1.png';
+import heroBannerImg from '../assets/pattu-saree-banner1.jpg';
 import aboutShowroomImg from '../assets/about-image-2.jpg';
 import blouseCraftImg from '../assets/blouses/blouse_emerald_peacock.jpg';
 import ctaBgImg from '../assets/collections/saree_emerald_green.jpg';
 
 // Category Grid Images
-import catSilk from '../assets/silk-sarees-banner1.png';
-import catDesigner from '../assets/desginer_sarees-banner1.png';
+import catSilk from '../assets/silk-sarees-banner1.jpg';
+import catDesigner from '../assets/desginer_sarees-banner1.jpg';
 import catBridal from '../assets/occasions/wedding.jpg';
 import catFestive from '../assets/occasions/diwali.jpg';
 import catDola from '../assets/collections/saree_dusty_plum.jpg';
 import catCrepe from '../assets/collections/saree_royal_blue.jpg';
 import catMaheshwari from '../assets/occasions/sankranti.jpg';
-import catMangalagiri from '../assets/pattu-saree-banner1.png';
+import catMangalagiri from '../assets/pattu-saree-banner1.jpg';
 
 /* ==========================================================================
    DATA-DRIVEN MANIFESTO & PHILOSOPHY
@@ -140,6 +140,7 @@ const AboutHero = ({ onNavigate }) => {
           alt="Sridevi Sarees Craftsmanship and Fabric Texture"
           className="about-hero-bg-image"
           loading="eager"
+          decoding="async"
         />
         <div className="about-hero-gradient-overlay" />
       </div>
@@ -192,6 +193,7 @@ const AboutStory = () => {
                 alt="Sridevi Sarees Showroom and Computer Embroidery Studio in Kandukur"
                 className="story-primary-img"
                 loading="eager"
+                decoding="async"
               />
               <div className="story-image-glow-overlay" aria-hidden="true" />
             </div>
@@ -396,6 +398,7 @@ const CollectionPhilosophy = () => {
                   alt={`${cat.name} Collection`}
                   className="cat-card-img"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="cat-card-overlay" />
                 <span className="cat-card-badge">{cat.tag}</span>
@@ -426,6 +429,7 @@ const CraftsmanshipSection = ({ onNavigate }) => {
                 alt="Precision Computer Embroidery Work Blouse"
                 className="craft-main-image"
                 loading="lazy"
+                decoding="async"
               />
               <div className="craft-image-backdrop" aria-hidden="true" />
               <div className="craft-floating-tag">
@@ -475,6 +479,7 @@ const AboutCTA = ({ onNavigate }) => {
           alt="Royal Saree Weave"
           className="about-cta-bg-img"
           loading="lazy"
+          decoding="async"
         />
         <div className="about-cta-overlay" />
       </div>

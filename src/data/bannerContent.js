@@ -1,4 +1,10 @@
 import { apiFetch } from '../utils/api';
+import defaultSilkBanner from '../assets/silk-sarees-banner1.jpg';
+import defaultCottonBanner from '../assets/cotton-sarees-banner1.jpg';
+import defaultPattuBanner from '../assets/pattu-saree-banner1.jpg';
+import defaultDesignerBanner from '../assets/desginer_sarees-banner1.jpg';
+import defaultPrintedBanner from '../assets/priented-sarees-banner1.jpg';
+import defaultHandloomBanner from '../assets/handloom-sarees-banner1.jpg';
 
 /**
  * Sridevi Sarees & Collections - Website Changes & Banner Configuration Data
@@ -9,6 +15,26 @@ import { apiFetch } from '../utils/api';
  */
 
 export const BANNER_UPDATE_EVENT = 'sridevi-banner-updated';
+
+const ASSET_PATH_MAP = {
+  'src/assets/silk-sarees-banner1.jpg': defaultSilkBanner,
+  'src/assets/silk-sarees-banner1.png': defaultSilkBanner,
+  'src/assets/cotton-sarees-banner1.jpg': defaultCottonBanner,
+  'src/assets/cotton-sarees-banner1.png': defaultCottonBanner,
+  'src/assets/pattu-saree-banner1.jpg': defaultPattuBanner,
+  'src/assets/pattu-saree-banner1.png': defaultPattuBanner,
+  'src/assets/desginer_sarees-banner1.jpg': defaultDesignerBanner,
+  'src/assets/desginer_sarees-banner1.png': defaultDesignerBanner,
+  'src/assets/priented-sarees-banner1.jpg': defaultPrintedBanner,
+  'src/assets/handloom-sarees-banner1.jpg': defaultHandloomBanner
+};
+
+export function resolveBannerImageUrl(url) {
+  if (!url) return defaultSilkBanner;
+  if (ASSET_PATH_MAP[url]) return ASSET_PATH_MAP[url];
+  if (url.startsWith('src/assets/')) return defaultSilkBanner;
+  return url;
+}
 
 // 10 Customer-Facing Website Sections supported by the CMS Architecture
 export const WEBSITE_SECTIONS = [
@@ -130,7 +156,7 @@ export const DEFAULT_BANNER_CONFIG = {
   secondaryButtonUrl: '#view-all',
   
   // Imagery
-  desktopImage: 'src/assets/silk-sarees-banner1.png',
+  desktopImage: defaultSilkBanner,
   mobileImage: '',
   imageAlt: 'Sridevi Sarees & Collections Pure Silk Showcase Banner',
   
@@ -229,7 +255,9 @@ export async function fetchPublishedBanner() {
     if (response.ok) {
       const result = await response.json();
       if (result.success && result.data) {
-        return { ...DEFAULT_BANNER_CONFIG, ...result.data };
+        const data = { ...result.data };
+        data.desktopImage = resolveBannerImageUrl(data.desktopImage);
+        return { ...DEFAULT_BANNER_CONFIG, ...data };
       }
     }
   } catch (err) {
@@ -256,7 +284,9 @@ export async function fetchDraftBanner() {
     if (response.ok) {
       const result = await response.json();
       if (result.success && result.data) {
-        return { ...DEFAULT_BANNER_CONFIG, ...result.data };
+        const data = { ...result.data };
+        data.desktopImage = resolveBannerImageUrl(data.desktopImage);
+        return { ...DEFAULT_BANNER_CONFIG, ...data };
       }
     }
   } catch (err) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import storeLogo from '../assets/logo_2.png';
-import silkBanner from '../assets/silk-sarees-banner1.png';
+import silkBanner from '../assets/silk-sarees-banner1.jpg';
 import { useTypingAnimation } from '../data/typingAnimation';
 import Products from './Products';
 import EmbroideryServices from './EmbroideryServices';

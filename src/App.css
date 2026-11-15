@@ -511,7 +511,23 @@
    SPECIAL SCROLLING TRANSITION & REVEAL EFFECTS
    ========================================================= */
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 1025px) and (hover: hover) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Optimize Mobile Scrolling & Off-screen Layout Performance */
+.occasion-card,
+.collection-card,
+.blouse-item-card,
+.review-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 380px;
 }
 
 /* Elegant Silk Transition Divider between Hero and About */

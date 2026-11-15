@@ -1,11 +1,27 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './components.css';
-import { getPublishedBanner, BANNER_UPDATE_EVENT, fetchPublishedBanner } from '../data/bannerContent';
+import { getPublishedBanner, BANNER_UPDATE_EVENT, fetchPublishedBanner, resolveBannerImageUrl } from '../data/bannerContent';
+
+import silkBannerImg from '../assets/silk-sarees-banner1.jpg';
+import cottonBannerImg from '../assets/cotton-sarees-banner1.jpg';
+import pattuBannerImg from '../assets/pattu-saree-banner1.jpg';
+import designerBannerImg from '../assets/desginer_sarees-banner1.jpg';
+import printedBannerImg from '../assets/priented-sarees-banner1.jpg';
+import handloomBannerImg from '../assets/handloom-sarees-banner1.jpg';
+
+const defaultBannerImages = [
+  silkBannerImg,
+  cottonBannerImg,
+  pattuBannerImg,
+  designerBannerImg,
+  printedBannerImg,
+  handloomBannerImg
+];
 
 const sarees = [
   {
     id: 1,
-    image: 'src/assets/silk-sarees-banner1.png',
+    image: silkBannerImg,
     title: 'Silk Sarees',
     subtitle: 'Dola Silk • Kanchipuram • Banarasi • Pure Silk',
     tag: 'Premium Collection',
@@ -16,7 +32,7 @@ const sarees = [
   },
   {
     id: 2,
-    image: 'src/assets/cotton-sarees-banner1.png',
+    image: cottonBannerImg,
     title: 'Cotton Sarees',
     subtitle: 'Soft Cotton • Mulmul • Kota • Lightweight Weaves',
     tag: 'Everyday Elegance',
@@ -27,7 +43,7 @@ const sarees = [
   },
   {
     id: 3,
-    image: 'src/assets/pattu-saree-banner1.png',
+    image: pattuBannerImg,
     title: 'Pattu Sarees',
     subtitle: 'Bridal Pattu • Kanjivaram • Temple Zari • Festive Weaves',
     tag: 'Bridal Collection',
@@ -38,7 +54,7 @@ const sarees = [
   },
   {
     id: 4,
-    image: 'src/assets/desginer_sarees-banner1.png',
+    image: designerBannerImg,
     title: 'Designer Sarees',
     subtitle: 'Modern Drapes • Statement Borders • Party Wear • Luxury Styles',
     tag: 'Trending Now',
@@ -49,7 +65,7 @@ const sarees = [
   },
   {
     id: 5,
-    image: 'src/assets/priented-sarees-banner1.jpg',
+    image: printedBannerImg,
     title: 'Printed Sarees',
     subtitle: 'Floral Prints • Digital Prints • Contemporary Patterns • Elegant Drapes',
     tag: 'New Arrivals',
@@ -60,7 +76,7 @@ const sarees = [
   },
   {
     id: 6,
-    image: 'src/assets/handloom-sarees-banner1.jpg',
+    image: handloomBannerImg,
     title: 'Handloom Sarees',
     subtitle: 'Traditional Weaves • Artisan Craft • Heritage Designs • Natural Textures',
     tag: 'Heritage Edit',
@@ -162,6 +178,7 @@ export default function SareeHero() {
     if (!publishedBanner) return sarees;
     return sarees.map((item, idx) => {
       if (idx === 0) {
+        const bannerImage = resolveBannerImageUrl(publishedBanner.desktopImage);
         return {
           ...item,
           title: publishedBanner.title || item.title,
@@ -169,7 +186,7 @@ export default function SareeHero() {
           description: publishedBanner.description || item.description,
           tag: publishedBanner.tag || item.tag,
           subtitle: publishedBanner.subtitle || item.subtitle,
-          image: publishedBanner.desktopImage || item.image
+          image: bannerImage
         };
       }
       return item;
@@ -254,11 +271,19 @@ export default function SareeHero() {
     }
   };
 
-  const [isMobile, setIsMobile] = useState(false);
+  const [viewportTier, setViewportTier] = useState('desktop');
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      const w = window.innerWidth;
+      if (w < 768) {
+        setViewportTier('mobile');
+      } else if (w <= 1100) {
+        // Tablet & Mobile device with "Desktop Site" enabled
+        setViewportTier('tablet-desktop-mobile');
+      } else {
+        setViewportTier('desktop');
+      }
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -269,8 +294,8 @@ export default function SareeHero() {
   const getCardStyle = (index) => {
     const diff = (index - currentIndex + totalSarees) % totalSarees;
 
-    // Responsive compact stack on mobile devices
-    if (isMobile) {
+    // 1. Mobile phone native layout (< 768px)
+    if (viewportTier === 'mobile') {
       if (diff === 0) {
         return {
           transform: 'translate3d(0, 0, 0) scale(1)',
@@ -314,6 +339,61 @@ export default function SareeHero() {
       }
     }
 
+    // 2. Tablet or Mobile device with "Desktop Site" mode toggled (768px - 1100px)
+    // Tightly bounded offsets so cards never overflow or look disproportionately huge
+    if (viewportTier === 'tablet-desktop-mobile') {
+      if (diff === 0) {
+        return {
+          transform: 'translate3d(0, 0, 0) scale(1)',
+          zIndex: 10,
+          opacity: 1,
+          pointerEvents: 'auto',
+          visibility: 'visible',
+        };
+      } else if (diff === 1) {
+        return {
+          transform: 'translate3d(50px, 0, -25px) scale(0.94)',
+          zIndex: 8,
+          opacity: 0.95,
+          pointerEvents: 'auto',
+          visibility: 'visible',
+        };
+      } else if (diff === 2) {
+        return {
+          transform: 'translate3d(95px, 0, -50px) scale(0.88)',
+          zIndex: 6,
+          opacity: 0.85,
+          pointerEvents: 'auto',
+          visibility: 'visible',
+        };
+      } else if (diff === 3) {
+        return {
+          transform: 'translate3d(135px, 0, -75px) scale(0.82)',
+          zIndex: 4,
+          opacity: 0.60,
+          pointerEvents: 'auto',
+          visibility: 'visible',
+        };
+      } else if (diff === totalSarees - 1) {
+        return {
+          transform: 'translate3d(-50px, 0, -30px) scale(0.92)',
+          zIndex: 1,
+          opacity: 0,
+          pointerEvents: 'none',
+          visibility: 'hidden',
+        };
+      } else {
+        return {
+          transform: 'translate3d(165px, 0, -100px) scale(0.75)',
+          zIndex: 0,
+          opacity: 0,
+          pointerEvents: 'none',
+          visibility: 'hidden',
+        };
+      }
+    }
+
+    // 3. Wide Desktop screens (> 1100px)
     if (diff === 0) {
       // Main foreground showcase card
       return {
@@ -326,7 +406,7 @@ export default function SareeHero() {
     } else if (diff === 1) {
       // 2nd card (stacked directly behind main, peeking to the right)
       return {
-        transform: 'translate3d(150px, 0, -30px) scale(0.94)',
+        transform: 'translate3d(140px, 0, -30px) scale(0.94)',
         zIndex: 8,
         opacity: 0.96,
         pointerEvents: 'auto',
@@ -335,7 +415,7 @@ export default function SareeHero() {
     } else if (diff === 2) {
       // 3rd card
       return {
-        transform: 'translate3d(280px, 0, -60px) scale(0.88)',
+        transform: 'translate3d(260px, 0, -60px) scale(0.88)',
         zIndex: 6,
         opacity: 0.90,
         pointerEvents: 'auto',
@@ -344,7 +424,7 @@ export default function SareeHero() {
     } else if (diff === 3) {
       // 4th card
       return {
-        transform: 'translate3d(390px, 0, -90px) scale(0.82)',
+        transform: 'translate3d(360px, 0, -90px) scale(0.82)',
         zIndex: 4,
         opacity: 0.82,
         pointerEvents: 'auto',
@@ -353,7 +433,7 @@ export default function SareeHero() {
     } else if (diff === 4) {
       // 5th card peeking far right
       return {
-        transform: 'translate3d(490px, 0, -120px) scale(0.76)',
+        transform: 'translate3d(450px, 0, -120px) scale(0.76)',
         zIndex: 2,
         opacity: 0.60,
         pointerEvents: 'auto',
@@ -371,7 +451,7 @@ export default function SareeHero() {
     } else {
       // Inactive card waiting on the right
       return {
-        transform: 'translate3d(580px, 0, -150px) scale(0.7)',
+        transform: 'translate3d(520px, 0, -150px) scale(0.7)',
         zIndex: 0,
         opacity: 0,
         pointerEvents: 'none',
@@ -586,9 +666,11 @@ export default function SareeHero() {
           {/* Subtle Blurred Fabric Backdrop for Depth & Luxury Showroom Atmosphere */}
           <div className="saree-backdrop-fabric-wrapper" aria-hidden="true">
             <img
-              src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=1200&q=80"
+              src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=800&q=70"
               alt="Blurred silk fabric background"
               className="saree-backdrop-fabric-img"
+              loading="lazy"
+              decoding="async"
             />
             <div className="saree-backdrop-fabric-overlay" />
           </div>
@@ -613,12 +695,19 @@ export default function SareeHero() {
                   aria-hidden={!isMain}
                 >
                   <div className="saree-card-inner">
-                    {/* Realistic 9:16 Photography */}
+                    {/* Realistic 9:16 Photography with Robust Fallback & Async Decoding */}
                     <img
                       src={saree.image}
                       alt={saree.title}
                       className="saree-card-image"
-                      loading={index <= 2 ? 'eager' : 'lazy'}
+                      loading={index <= 1 ? 'eager' : 'lazy'}
+                      decoding="async"
+                      onError={(e) => {
+                        const fallback = defaultBannerImages[index % defaultBannerImages.length];
+                        if (e.currentTarget.src !== fallback) {
+                          e.currentTarget.src = fallback;
+                        }
+                      }}
                     />
 
                     {/* Elegant Luxury Gold Hairline Bezel */}

@@ -26,10 +26,10 @@ import { uploadImageFile } from '../utils/api';
 
 // Preset saree imagery available within the project for one-click selection
 const PRESET_BANNER_IMAGES = [
-  { label: 'Silk Sarees Heritage', path: 'src/assets/silk-sarees-banner1.png' },
-  { label: 'Pattu Bridal Weaves', path: 'src/assets/pattu-saree-banner1.png' },
-  { label: 'Cotton Everyday Breezy', path: 'src/assets/cotton-sarees-banner1.png' },
-  { label: 'Designer Glamour Drapes', path: 'src/assets/desginer_sarees-banner1.png' },
+  { label: 'Silk Sarees Heritage', path: 'src/assets/silk-sarees-banner1.jpg' },
+  { label: 'Pattu Bridal Weaves', path: 'src/assets/pattu-saree-banner1.jpg' },
+  { label: 'Cotton Everyday Breezy', path: 'src/assets/cotton-sarees-banner1.jpg' },
+  { label: 'Designer Glamour Drapes', path: 'src/assets/desginer_sarees-banner1.jpg' },
   { label: 'Printed Art Motifs', path: 'src/assets/priented-sarees-banner1.jpg' },
   { label: 'Authentic Handloom', path: 'src/assets/handloom-sarees-banner1.jpg' }
 ];

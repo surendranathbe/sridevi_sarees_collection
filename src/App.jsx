@@ -8,9 +8,9 @@ import OurCollections from './components/our-collections';
 import AdminLogin from './admindashboard/AdminLogin';
 import AdminDashboard from './admindashboard/AdminDashboard';
 import { apiFetch, clearAdminSession, getAdminToken } from './utils/api';
-import silkBanner from './assets/silk-sarees-banner1.png';
-import pattuBanner from './assets/pattu-saree-banner1.png';
-import designerBanner from './assets/desginer_sarees-banner1.png';
+import silkBanner from './assets/silk-sarees-banner1.jpg';
+import pattuBanner from './assets/pattu-saree-banner1.jpg';
+import designerBanner from './assets/desginer_sarees-banner1.jpg';
 import handloomBanner from './assets/handloom-sarees-banner1.jpg';
 import sareeNavyBlue from './assets/collections/saree_navy_blue.jpg';
 import sareeDustyPlum from './assets/collections/saree_dusty_plum.jpg';
@@ -24,7 +24,7 @@ import weddingImg from './assets/occasions/wedding.jpg';
 import sankrantiImg from './assets/occasions/sankranti.jpg';
 import lakshmiPoojaImg from './assets/occasions/lakshmi-pooja.jpg';
 import navaratriImg from './assets/occasions/navaratri.jpg';
-import ugadiImg from './assets/occasions/Udagi.png';
+import ugadiImg from './assets/occasions/Udagi.jpg';
 import diwaliImg from './assets/occasions/diwali.jpg';
 import blouseMaroon from './assets/blouses/blouse_maroon_gold.jpg';
 import blouseEmerald from './assets/blouses/blouse_emerald_peacock.jpg';
@@ -582,13 +582,41 @@ function App() {
     }
   };
 
-  // Auto-scroll Occasion cards from right to left continuously
+  const isPageScrolling = useRef(false);
+
+  useEffect(() => {
+    let scrollTimeout;
+    const onScroll = () => {
+      isPageScrolling.current = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        isPageScrolling.current = false;
+      }, 700);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, []);
+
+  // Auto-scroll Occasion cards from right to left continuously (pauses when user scrolls page to prevent stutter)
   useEffect(() => {
     const container = occasionScrollRef.current;
     if (!container) return;
 
+    let isVisible = true;
+    let observer;
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(([entry]) => {
+        isVisible = entry.isIntersecting;
+      }, { threshold: 0.1 });
+      observer.observe(container);
+    }
+
     const intervalId = setInterval(() => {
-      if (isOccasionPaused.current) return;
+      if (isOccasionPaused.current || isPageScrolling.current || !isVisible) return;
 
       const firstCard = container.querySelector('.occasion-card');
       const scrollDelta = firstCard ? firstCard.offsetWidth + 16 : 280;
@@ -599,9 +627,12 @@ function App() {
       } else {
         container.scrollBy({ left: scrollDelta, behavior: 'smooth' });
       }
-    }, 2800);
+    }, 3200);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+      if (observer) observer.disconnect();
+    };
   }, []);
 
   const handleReviewsScroll = (direction) => {
@@ -626,13 +657,22 @@ function App() {
     }
   };
 
-  // Automatic right-to-left sliding animation for customer reviews
+  // Automatic right-to-left sliding animation for customer reviews (pauses when user scrolls page)
   useEffect(() => {
     const container = reviewsScrollRef.current;
     if (!container) return;
 
+    let isVisible = true;
+    let observer;
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(([entry]) => {
+        isVisible = entry.isIntersecting;
+      }, { threshold: 0.1 });
+      observer.observe(container);
+    }
+
     const intervalId = setInterval(() => {
-      if (isReviewsPaused.current) return;
+      if (isReviewsPaused.current || isPageScrolling.current || !isVisible) return;
 
       const firstCard = container.querySelector('.review-card');
       const scrollDelta = firstCard ? firstCard.offsetWidth + 24 : 380;
@@ -643,9 +683,12 @@ function App() {
       } else {
         container.scrollBy({ left: scrollDelta, behavior: 'smooth' });
       }
-    }, 3200);
+    }, 3600);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+      if (observer) observer.disconnect();
+    };
   }, []);
 
   const scrollToAbout = () => {
@@ -772,6 +815,7 @@ function App() {
                   alt={activeDrape.title}
                   className="about-showcase-img"
                   key={activeDrape.id}
+                  decoding="async"
                 />
                 <div className="about-floating-bar">
                   <h4>{activeDrape.title}</h4>
@@ -790,7 +834,7 @@ function App() {
                     className={`about-thumb-btn ${drape.id === selectedDrapeId ? 'active' : ''}`}
                     onClick={() => setSelectedDrapeId(drape.id)}
                   >
-                    <img src={drape.image} alt={drape.title} />
+                    <img src={drape.image} alt={drape.title} decoding="async" />
                     <span>{drape.shortName}</span>
                   </button>
                 ))}
@@ -977,6 +1021,7 @@ function App() {
                         alt={item.title}
                         className="occasion-card-img"
                         loading="lazy"
+                        decoding="async"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
                           e.currentTarget.src = item.fallback;
@@ -1057,6 +1102,7 @@ function App() {
                         alt={item.name}
                         className="collection-img saree-only-img"
                         loading="lazy"
+                        decoding="async"
                       />
 
                       {/* 2. Female Model Wearing the Saree (Shown on hover) */}
@@ -1065,6 +1111,7 @@ function App() {
                         alt={`${item.name} draped on model`}
                         className="collection-img model-wearing-img"
                         loading="lazy"
+                        decoding="async"
                       />
 
                       {/* Floating Action Icons: Wishlist Heart & Bag */}
@@ -1192,6 +1239,7 @@ function App() {
                         alt={blouseCollection[0].title}
                         className="blouse-spotlight-img"
                         loading="lazy"
+                        decoding="async"
                       />
                       <span className="blouse-table-pill">Flat Lay Studio Display</span>
                     </div>
@@ -1241,6 +1289,7 @@ function App() {
                         alt={item.title}
                         className="blouse-table-photo"
                         loading="lazy"
+                        decoding="async"
                       />
                       <div className="blouse-finish-chip">
                         <span>Completed Computer Work</span>

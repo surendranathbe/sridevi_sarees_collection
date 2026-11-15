@@ -605,6 +605,8 @@ const OurCollections = ({
                       <img
                         src={saree.firstImageUrl}
                         alt={saree.name}
+                        loading="lazy"
+                        decoding="async"
                         style={{ width: '100%', height: '260px', objectFit: 'cover' }}
                       />
                     )}
