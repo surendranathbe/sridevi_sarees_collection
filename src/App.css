@@ -524,8 +524,7 @@ html {
 /* Optimize Mobile Scrolling & Off-screen Layout Performance */
 .occasion-card,
 .collection-card,
-.blouse-item-card,
-.review-card {
+.blouse-item-card {
   content-visibility: auto;
   contain-intrinsic-size: 380px;
 }
@@ -2333,6 +2332,8 @@ html {
               box-shadow 0.45s ease,
               border-color 0.45s ease;
   user-select: none;
+  content-visibility: visible !important;
+  contain: none !important;
 }
 
 /* In Focus Styling: Sharp, Elevated, 100% Opacity, Rich Luxury Glow */

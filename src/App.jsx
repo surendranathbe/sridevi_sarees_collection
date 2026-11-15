@@ -175,13 +175,6 @@ const customerReviews = [
   }
 ];
 
-// Extended reviews array for seamless infinite sliding with symmetrical peeking
-const extendedReviews = [
-  ...customerReviews.map((r, i) => ({ ...r, virtualKey: `set1-${i}` })),
-  ...customerReviews.map((r, i) => ({ ...r, virtualKey: `set2-${i}` })),
-  ...customerReviews.map((r, i) => ({ ...r, virtualKey: `set3-${i}` }))
-];
-
 const ourCollections = [
   {
     id: 'navy-blue-silver-zari',
@@ -639,10 +632,8 @@ function App() {
     }
   };
 
-  // Customer Reviews Centered Focus Carousel (Symmetrical Peeking, Focus Highlighting, Infinite Seamless Slide)
-  const totalReviews = customerReviews.length; // 6
-  const [slideIndex, setSlideIndex] = useState(6);
-  const [isTransitioning, setIsTransitioning] = useState(true);
+  // Customer Reviews Centered Focus Carousel (Symmetrical Peeking, Focus Highlighting, Rock-solid Bounded Index)
+  const [reviewIndex, setReviewIndex] = useState(1);
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth <= 1059;
@@ -664,41 +655,15 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const maxReviewIndex = isMobileOrTablet ? 5 : 4;
+
   const handleReviewPrev = () => {
-    setIsTransitioning(true);
-    setSlideIndex((prev) => prev - 1);
+    setReviewIndex((prev) => (prev <= 0 ? maxReviewIndex : prev - 1));
   };
 
   const handleReviewNext = () => {
-    setIsTransitioning(true);
-    setSlideIndex((prev) => prev + 1);
+    setReviewIndex((prev) => (prev >= maxReviewIndex ? 0 : prev + 1));
   };
-
-  const handleDotClick = (targetDot) => {
-    setIsTransitioning(true);
-    setSlideIndex(6 + targetDot);
-  };
-
-  const handleSlideTransitionEnd = () => {
-    if (slideIndex < 6) {
-      setIsTransitioning(false);
-      setSlideIndex((prev) => prev + totalReviews);
-    } else if (slideIndex >= 12) {
-      setIsTransitioning(false);
-      setSlideIndex((prev) => prev - totalReviews);
-    }
-  };
-
-  useEffect(() => {
-    if (!isTransitioning) {
-      const raf = requestAnimationFrame(() => {
-        setIsTransitioning(true);
-      });
-      return () => cancelAnimationFrame(raf);
-    }
-  }, [isTransitioning]);
-
-  const activeDot = ((slideIndex - 6) % totalReviews + totalReviews) % totalReviews;
 
   const handleReviewTouchStart = (e) => {
     isReviewPaused.current = true;
@@ -729,12 +694,11 @@ function App() {
   useEffect(() => {
     const intervalId = setInterval(() => {
       if (isReviewPaused.current || isPageScrolling.current) return;
-      setIsTransitioning(true);
-      setSlideIndex((prev) => prev + 1);
+      setReviewIndex((prev) => (prev >= maxReviewIndex ? 0 : prev + 1));
     }, 4500);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [maxReviewIndex]);
 
   useEffect(() => {
     let scrollTimeout;
@@ -1666,30 +1630,27 @@ function App() {
                 {/* Centered Sliding Track */}
                 <div
                   className="reviews-carousel-track"
-                  onTransitionEnd={handleSlideTransitionEnd}
                   style={{
-                    transform: `translateX(calc(-1 * (${slideIndex} * (var(--card-width) + var(--card-gap)) + var(--focus-offset))))`,
-                    transition: isTransitioning ? 'transform 0.46s cubic-bezier(0.22, 1, 0.36, 1)' : 'none'
+                    transform: `translateX(calc(-1 * (${reviewIndex} * (var(--card-width) + var(--card-gap)) + var(--focus-offset))))`,
+                    transition: 'transform 0.46s cubic-bezier(0.22, 1, 0.36, 1)'
                   }}
                 >
-                  {extendedReviews.map((rev, idx) => {
+                  {customerReviews.map((rev, idx) => {
                     const isFocus = isMobileOrTablet
-                      ? idx === slideIndex
-                      : idx === slideIndex || idx === slideIndex + 1;
-                    const isLeft = idx < slideIndex;
-                    const isRight = isMobileOrTablet ? idx > slideIndex : idx > slideIndex + 1;
+                      ? idx === reviewIndex
+                      : idx === reviewIndex || idx === reviewIndex + 1;
+                    const isLeft = idx < reviewIndex;
+                    const isRight = isMobileOrTablet ? idx > reviewIndex : idx > reviewIndex + 1;
 
                     const handleCardClick = () => {
-                      if (isLeft) {
-                        handleReviewPrev();
-                      } else if (isRight) {
-                        handleReviewNext();
+                      if (isLeft || isRight) {
+                        setReviewIndex(idx);
                       }
                     };
 
                     return (
                       <article
-                        key={rev.virtualKey}
+                        key={rev.id}
                         className={`review-card ${isFocus ? 'in-focus' : 'is-peeking'}`}
                         onClick={handleCardClick}
                         role={isFocus ? 'article' : 'button'}
@@ -1747,15 +1708,15 @@ function App() {
 
             {/* Pagination Indicator Dots */}
             <div className="reviews-pagination" role="tablist" aria-label="Review slide pagination">
-              {customerReviews.map((_, idx) => (
+              {Array.from({ length: maxReviewIndex + 1 }).map((_, idx) => (
                 <button
                   key={idx}
                   type="button"
-                  className={`review-dot ${activeDot === idx ? 'active' : ''}`}
-                  onClick={() => handleDotClick(idx)}
-                  aria-label={`Go to review ${idx + 1}`}
+                  className={`review-dot ${reviewIndex === idx ? 'active' : ''}`}
+                  onClick={() => setReviewIndex(idx)}
+                  aria-label={`Go to review slide ${idx + 1}`}
                   role="tab"
-                  aria-selected={activeDot === idx}
+                  aria-selected={reviewIndex === idx}
                 />
               ))}
             </div>
