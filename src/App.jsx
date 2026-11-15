@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import AboutPage from './components/AboutPage';
 import ContactUs from './components/ContactUs';
 import OurCollections from './components/our-collections';
+import ScrollProgressCircle from './components/ScrollProgressCircle';
 import AdminLogin from './admindashboard/AdminLogin';
 import AdminDashboard from './admindashboard/AdminDashboard';
 import { apiFetch, clearAdminSession, getAdminToken } from './utils/api';
@@ -1672,6 +1673,9 @@ function App() {
 
       {/* Luxury 4-Column Footer Section */}
       <Footer onNavigate={handleNavigate} />
+
+      {/* Stationary Floating Circular Scroll Progress Percentage Widget */}
+      <ScrollProgressCircle />
     </div>
   );
 }

@@ -1023,3 +1023,74 @@ input:checked + .wc-toggle-slider:before {
   gap: 0.75rem;
   margin-top: 0.5rem;
 }
+
+/* ==========================================================================
+   10. MOBILE RESPONSIVENESS (< 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .wc-header-card {
+    padding: 1.25rem 1rem !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+  }
+
+  .wc-header-title {
+    font-size: 1.3rem !important;
+    line-height: 1.35;
+  }
+
+  .wc-header-subtitle {
+    font-size: 0.82rem !important;
+  }
+
+  .wc-header-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+
+  .wc-header-actions .wc-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .wc-sections-container {
+    padding: 1rem 0.85rem !important;
+  }
+
+  .wc-sections-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+
+  .wc-section-pill-btn {
+    padding: 0.6rem 0.65rem !important;
+    font-size: 0.76rem !important;
+  }
+
+  .wc-editor-body {
+    padding: 1rem 0.85rem !important;
+  }
+
+  .wc-field-section {
+    padding: 1rem 0.75rem !important;
+  }
+
+  .wc-preview-wrap {
+    padding: 1rem 0.75rem !important;
+  }
+
+  .wc-modal-box {
+    width: calc(100vw - 1.5rem) !important;
+    max-width: calc(100vw - 1.5rem) !important;
+    padding: 1.25rem 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .wc-sections-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+

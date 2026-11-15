@@ -433,7 +433,7 @@ const AdminDashboard = ({ onNavigate, onLogout }) => {
               <span className="admin-bell-badge" />
             </button>
 
-            <div className="admin-role-pill">
+            <div className="admin-role-pill admin-superadmin-pill">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
               </svg>
@@ -442,7 +442,7 @@ const AdminDashboard = ({ onNavigate, onLogout }) => {
 
             <button
               type="button"
-              className="admin-role-pill"
+              className="admin-role-pill admin-store-btn"
               style={{
                 cursor: 'pointer',
                 background: 'rgba(92, 17, 39, 0.06)',
@@ -470,7 +470,7 @@ const AdminDashboard = ({ onNavigate, onLogout }) => {
 
             <button
               type="button"
-              className="admin-role-pill"
+              className="admin-role-pill admin-logout-btn"
               style={{
                 cursor: 'pointer',
                 background: 'rgba(220, 53, 69, 0.08)',
