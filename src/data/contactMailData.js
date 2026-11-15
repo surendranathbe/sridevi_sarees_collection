@@ -181,7 +181,7 @@ export const resetContactCooldown = () => {
  */
 export const submitContactForm = async (formData = {}) => {
   // 1. Honeypot check: reject bots immediately with silent success; no network request, no mailto
-  const honeypotValue = formData[contactMailConfig.honeypotField] || formData._honey;
+  const honeypotValue = formData[contactMailConfig.honeypotField] || formData['_honey'] || formData.honey;
   if (honeypotValue && String(honeypotValue).trim() !== '') {
     return {
       success: true,

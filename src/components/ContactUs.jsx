@@ -343,7 +343,7 @@ const ContactUs = ({ onNavigate = () => {} }) => {
                       name="_honey"
                       tabIndex="-1"
                       autoComplete="off"
-                      value={formState._honey}
+                      value={formState['_honey'] || ''}
                       onChange={handleInputChange}
                     />
                   </div>
@@ -448,6 +448,7 @@ const ContactUs = ({ onNavigate = () => {} }) => {
                   className="contact-google-iframe"
                   loading="lazy"
                   allowFullScreen
+                  sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
                 />
                 <div className="map-overlay-badge">
                   <span className="map-badge-pin">📍</span>
