@@ -1,29 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { SAREE_CATEGORIES } from '../data/products';
 import './our-collections.css';
-
-/**
- * All Saree Categories for Sridevi Sarees & Collections
- * Includes authentic Telugu traditional names and tags.
- */
-const SAREE_CATEGORIES = [
-  { id: 'all', name: 'All Sarees', telugu: 'అన్ని చీరలు', tag: 'All Weaves' },
-  { id: 'kanchipuram-pattu', name: 'Kanchipuram Pattu', telugu: 'కాంచీపురం పట్టు', tag: 'Bridal Heritage' },
-  { id: 'royal-dola-silk', name: 'Royal Dola Silk', telugu: 'రాయల్ డోలా సిల్క్', tag: 'Festive Classic' },
-  { id: 'banarasi-silk', name: 'Banarasi Silk', telugu: 'బనారసి సిల్క్', tag: 'Zari Brocade' },
-  { id: 'dharmavaram-pattu', name: 'Dharmavaram Pattu', telugu: 'ధర్మవరం పట్టు', tag: 'Heritage Border' },
-  { id: 'gadwal-pattu', name: 'Gadwal Handloom', telugu: 'గద్వాల్ పట్టు', tag: 'Temple Weave' },
-  { id: 'uppada-silk', name: 'Uppada Silk', telugu: 'ఉప్పాడ పట్టు', tag: 'Jamdani Pure' },
-  { id: 'pochampally-ikkat', name: 'Pochampally Ikkat', telugu: 'పోచంపల్లి ఇక్కత్', tag: 'Tie & Dye' },
-  { id: 'mangalagiri-pattu', name: 'Mangalagiri Pattu', telugu: 'మంగళగిరి పట్టు', tag: 'Nizam Border' },
-  { id: 'pure-handloom', name: 'Pure Handloom Sarees', telugu: 'చేనేత చీరలు', tag: 'Artisan Pride' },
-  { id: 'designer-silk', name: 'Designer Silk Sarees', telugu: 'డిజైనర్ సిల్క్', tag: 'Party Drapes' },
-  { id: 'organza-tissue', name: 'Organza & Tissue Sarees', telugu: 'ఆర్గాన్జా సిల్క్', tag: 'Sheer Glow' },
-  { id: 'chanderi-maheshwari', name: 'Chanderi & Maheshwari', telugu: 'మహేశ్వరి సిల్క్', tag: 'Royal Weave' },
-  { id: 'chiffon-georgette', name: 'Chiffon & Georgette', telugu: 'షిఫాన్ & జార్జెట్', tag: 'Lightweight' },
-  { id: 'pure-cotton', name: 'Pure Cotton Sarees', telugu: 'ప్యూర్ కాటన్', tag: 'Daily Comfort' },
-  { id: 'bridal-muhurtham', name: 'Bridal Muhurtham Sarees', telugu: 'పెళ్ళి పట్టు చీరలు', tag: 'Sacred Muhurtham' },
-  { id: 'festive-celebration', name: 'Festive & Celebration', telugu: 'పండుగ స్పెషల్', tag: 'Auspicious' }
-];
 
 // Price presets for quick selection with neat Indian Rupee formatting
 const PRICE_PRESETS = [
@@ -49,18 +26,50 @@ const OurCollections = ({
   onNavigate = () => {},
   onFilterChange = () => {}
 }) => {
-  // Category state
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // Applied filters state (Drives the active showcase, count badge, and main content)
+  const [appliedFilters, setAppliedFilters] = useState({
+    category: 'all',
+    minCost: MIN_COST_BOUND,
+    maxCost: MAX_COST_BOUND,
+    isAbove6500: true
+  });
+
+  // Draft filter states (Controlled inside sidebar / mobile drawer until user clicks "Apply Filters")
+  const [draftCategory, setDraftCategory] = useState('all');
+  const [draftMinCost, setDraftMinCost] = useState(MIN_COST_BOUND);
+  const [draftMaxCost, setDraftMaxCost] = useState(MAX_COST_BOUND);
+  const [draftIsAbove6500, setDraftIsAbove6500] = useState(true);
+
+  // Manual cost input string states for fluid manual typing on mobile and desktop
+  const [minCostInput, setMinCostInput] = useState(String(MIN_COST_BOUND));
+  const [maxCostInput, setMaxCostInput] = useState(String(MAX_COST_BOUND));
+
+  // Category quick search, sorting and mobile drawer states
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
-
-  // Cost (Range) Dynamic Feature Bar State: ₹450 to ₹6500 and above
-  const [minCost, setMinCost] = useState(MIN_COST_BOUND);
-  const [maxCost, setMaxCost] = useState(MAX_COST_BOUND);
-  const [isAbove6500, setIsAbove6500] = useState(true);
-
-  // Sorting and Mobile Drawer states
   const [sortBy, setSortBy] = useState('featured');
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+
+  // Open mobile drawer and sync draft with currently applied filters
+  const handleOpenMobileDrawer = () => {
+    setDraftCategory(appliedFilters.category);
+    setDraftMinCost(appliedFilters.minCost);
+    setDraftMaxCost(appliedFilters.maxCost);
+    setDraftIsAbove6500(appliedFilters.isAbove6500);
+    setMinCostInput(String(appliedFilters.minCost));
+    setMaxCostInput(String(appliedFilters.maxCost));
+    setIsMobileDrawerOpen(true);
+  };
+
+  // Close mobile drawer and revert unapplied draft changes
+  const handleCloseMobileDrawer = () => {
+    setIsMobileDrawerOpen(false);
+    setDraftCategory(appliedFilters.category);
+    setDraftMinCost(appliedFilters.minCost);
+    setDraftMaxCost(appliedFilters.maxCost);
+    setDraftIsAbove6500(appliedFilters.isAbove6500);
+    setMinCostInput(String(appliedFilters.minCost));
+    setMaxCostInput(String(appliedFilters.maxCost));
+  };
 
   // Filter categories by user search term in the sidebar
   const filteredCategoriesList = useMemo(() => {
@@ -74,50 +83,202 @@ const OurCollections = ({
     );
   }, [categorySearchQuery]);
 
-  // Handle dynamic dual slider changes
+  // Handle dynamic dual slider changes (Updates draft state smoothly)
   const handleMinSliderChange = (e) => {
     const val = Number(e.target.value);
-    if (val <= maxCost) {
-      setMinCost(val);
-      notifyFilterChange(selectedCategory, val, maxCost, isAbove6500);
+    if (val <= draftMaxCost) {
+      setDraftMinCost(val);
+      setMinCostInput(String(val));
+      if (typeof window !== 'undefined' && window.innerWidth >= 992) {
+        setAppliedFilters((prev) => ({ ...prev, minCost: val }));
+        notifyFilterChange(appliedFilters.category, val, draftMaxCost, draftIsAbove6500);
+      }
     }
   };
 
   const handleMaxSliderChange = (e) => {
     const val = Number(e.target.value);
-    if (val >= minCost) {
-      setMaxCost(val);
+    if (val >= draftMinCost) {
+      setDraftMaxCost(val);
+      setMaxCostInput(String(val));
+      const nextAbove = val === MAX_COST_BOUND ? true : draftIsAbove6500;
       if (val === MAX_COST_BOUND) {
-        setIsAbove6500(true);
+        setDraftIsAbove6500(true);
       }
-      notifyFilterChange(selectedCategory, minCost, val, val === MAX_COST_BOUND ? true : isAbove6500);
+      if (typeof window !== 'undefined' && window.innerWidth >= 992) {
+        setAppliedFilters((prev) => ({ ...prev, maxCost: val, isAbove6500: nextAbove }));
+        notifyFilterChange(appliedFilters.category, draftMinCost, val, nextAbove);
+      }
     }
   };
 
   // Toggle "₹6,500 and above" dynamic expander
   const handleToggleAbove = () => {
-    const nextState = !isAbove6500;
-    setIsAbove6500(nextState);
+    const nextState = !draftIsAbove6500;
+    setDraftIsAbove6500(nextState);
     if (nextState) {
-      setMaxCost(MAX_COST_BOUND);
+      setDraftMaxCost(MAX_COST_BOUND);
+      setMaxCostInput(String(MAX_COST_BOUND));
     }
-    notifyFilterChange(selectedCategory, minCost, maxCost, nextState);
+    if (typeof window !== 'undefined' && window.innerWidth >= 992) {
+      setAppliedFilters((prev) => ({
+        ...prev,
+        maxCost: nextState ? MAX_COST_BOUND : draftMaxCost,
+        isAbove6500: nextState
+      }));
+      notifyFilterChange(
+        appliedFilters.category,
+        draftMinCost,
+        nextState ? MAX_COST_BOUND : draftMaxCost,
+        nextState
+      );
+    }
   };
 
   // Quick Price Preset Chip Click
   const handlePresetClick = (preset) => {
-    setMinCost(preset.min);
-    setMaxCost(preset.max);
-    setIsAbove6500(preset.above);
-    notifyFilterChange(selectedCategory, preset.min, preset.max, preset.above);
+    setDraftMinCost(preset.min);
+    setDraftMaxCost(preset.max);
+    setMinCostInput(String(preset.min));
+    setMaxCostInput(String(preset.max));
+    setDraftIsAbove6500(preset.above);
+
+    if (typeof window !== 'undefined' && window.innerWidth >= 992) {
+      setAppliedFilters((prev) => ({
+        ...prev,
+        minCost: preset.min,
+        maxCost: preset.max,
+        isAbove6500: preset.above
+      }));
+      notifyFilterChange(appliedFilters.category, preset.min, preset.max, preset.above);
+    }
   };
 
   // Category selection handler
+  // CRITICAL REQUIREMENT: On mobile screen, NEVER close the drawer when clicking a category!
+  // The drawer stays open so user can adjust price and click "Apply Filters".
   const handleSelectCategory = (catId) => {
-    setSelectedCategory(catId);
-    notifyFilterChange(catId, minCost, maxCost, isAbove6500);
-    if (window.innerWidth < 992) {
-      setIsMobileDrawerOpen(false);
+    setDraftCategory(catId);
+    if (typeof window !== 'undefined' && window.innerWidth >= 992) {
+      setAppliedFilters((prev) => ({ ...prev, category: catId }));
+      notifyFilterChange(catId, draftMinCost, draftMaxCost, draftIsAbove6500);
+    }
+  };
+
+  // Manual Min Cost Input Handlers (Allows typing freely on mobile and desktop)
+  const handleMinCostInputChange = (e) => {
+    const clean = e.target.value.replace(/\D/g, '');
+    setMinCostInput(clean);
+    if (clean !== '') {
+      const num = parseInt(clean, 10);
+      if (num >= MIN_COST_BOUND && num <= draftMaxCost) {
+        setDraftMinCost(num);
+      }
+    }
+  };
+
+  const handleMinCostInputBlur = () => {
+    let num = parseInt(minCostInput.replace(/\D/g, ''), 10);
+    if (isNaN(num) || num < MIN_COST_BOUND) {
+      num = MIN_COST_BOUND;
+    } else if (num > draftMaxCost) {
+      num = draftMaxCost;
+    }
+    setDraftMinCost(num);
+    setMinCostInput(String(num));
+
+    if (typeof window !== 'undefined' && window.innerWidth >= 992) {
+      setAppliedFilters((prev) => ({ ...prev, minCost: num }));
+      notifyFilterChange(appliedFilters.category, num, draftMaxCost, draftIsAbove6500);
+    }
+  };
+
+  const handleMinCostKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.target.blur();
+    }
+  };
+
+  // Manual Max Cost Input Handlers
+  const handleMaxCostInputChange = (e) => {
+    const clean = e.target.value.replace(/\D/g, '');
+    setMaxCostInput(clean);
+    if (clean !== '') {
+      const num = parseInt(clean, 10);
+      if (num >= draftMinCost && num <= MAX_COST_BOUND) {
+        setDraftMaxCost(num);
+        if (num === MAX_COST_BOUND) {
+          setDraftIsAbove6500(true);
+        }
+      }
+    }
+  };
+
+  const handleMaxCostInputBlur = () => {
+    let num = parseInt(maxCostInput.replace(/\D/g, ''), 10);
+    if (isNaN(num)) {
+      num = MAX_COST_BOUND;
+    } else if (num < draftMinCost) {
+      num = draftMinCost;
+    } else if (num > MAX_COST_BOUND) {
+      num = MAX_COST_BOUND;
+    }
+    setDraftMaxCost(num);
+    setMaxCostInput(String(num));
+    const nextAbove = num === MAX_COST_BOUND ? true : draftIsAbove6500;
+    if (num === MAX_COST_BOUND) {
+      setDraftIsAbove6500(true);
+    }
+
+    if (typeof window !== 'undefined' && window.innerWidth >= 992) {
+      setAppliedFilters((prev) => ({ ...prev, maxCost: num, isAbove6500: nextAbove }));
+      notifyFilterChange(appliedFilters.category, draftMinCost, num, nextAbove);
+    }
+  };
+
+  const handleMaxCostKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.target.blur();
+    }
+  };
+
+  // Apply Filters Action
+  // On mobile screen: Commits draft filters, closes the drawer, and reveals the filtered results
+  const handleApplyFilters = () => {
+    let finalMin = parseInt(minCostInput.replace(/\D/g, ''), 10);
+    if (isNaN(finalMin) || finalMin < MIN_COST_BOUND) {
+      finalMin = MIN_COST_BOUND;
+    }
+    let finalMax = parseInt(maxCostInput.replace(/\D/g, ''), 10);
+    if (isNaN(finalMax) || finalMax > MAX_COST_BOUND) {
+      finalMax = MAX_COST_BOUND;
+    }
+    if (finalMin > finalMax) {
+      finalMin = finalMax;
+    }
+
+    setDraftMinCost(finalMin);
+    setDraftMaxCost(finalMax);
+    setMinCostInput(String(finalMin));
+    setMaxCostInput(String(finalMax));
+
+    const nextApplied = {
+      category: draftCategory,
+      minCost: finalMin,
+      maxCost: finalMax,
+      isAbove6500: draftIsAbove6500
+    };
+    setAppliedFilters(nextApplied);
+    notifyFilterChange(draftCategory, finalMin, finalMax, draftIsAbove6500);
+
+    // Close the filter drawer on mobile
+    setIsMobileDrawerOpen(false);
+
+    if (typeof window !== 'undefined' && window.innerWidth < 992) {
+      const topbarEl = document.querySelector('.col-topbar');
+      if (topbarEl) {
+        topbarEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
@@ -133,41 +294,83 @@ const OurCollections = ({
 
   // Reset all filters to default state
   const handleResetFilters = () => {
-    setSelectedCategory('all');
+    setDraftCategory('all');
     setCategorySearchQuery('');
-    setMinCost(MIN_COST_BOUND);
-    setMaxCost(MAX_COST_BOUND);
-    setIsAbove6500(true);
+    setDraftMinCost(MIN_COST_BOUND);
+    setDraftMaxCost(MAX_COST_BOUND);
+    setDraftIsAbove6500(true);
+    setMinCostInput(String(MIN_COST_BOUND));
+    setMaxCostInput(String(MAX_COST_BOUND));
+
+    const resetApplied = {
+      category: 'all',
+      minCost: MIN_COST_BOUND,
+      maxCost: MAX_COST_BOUND,
+      isAbove6500: true
+    };
+    setAppliedFilters(resetApplied);
     notifyFilterChange('all', MIN_COST_BOUND, MAX_COST_BOUND, true);
+
+    if (typeof window !== 'undefined' && window.innerWidth < 992) {
+      setIsMobileDrawerOpen(false);
+    }
+  };
+
+  // Remove individual filter badge pills
+  const handleRemoveCategoryPill = () => {
+    setDraftCategory('all');
+    setAppliedFilters((prev) => ({ ...prev, category: 'all' }));
+    notifyFilterChange('all', appliedFilters.minCost, appliedFilters.maxCost, appliedFilters.isAbove6500);
+  };
+
+  const handleRemovePricePill = () => {
+    setDraftMinCost(MIN_COST_BOUND);
+    setDraftMaxCost(MAX_COST_BOUND);
+    setDraftIsAbove6500(true);
+    setMinCostInput(String(MIN_COST_BOUND));
+    setMaxCostInput(String(MAX_COST_BOUND));
+
+    setAppliedFilters((prev) => ({
+      ...prev,
+      minCost: MIN_COST_BOUND,
+      maxCost: MAX_COST_BOUND,
+      isAbove6500: true
+    }));
+    notifyFilterChange(appliedFilters.category, MIN_COST_BOUND, MAX_COST_BOUND, true);
   };
 
   // Percentage calculations for dynamic slider highlight bar
-  const minPercent = Math.max(0, Math.min(100, ((minCost - MIN_COST_BOUND) / (MAX_COST_BOUND - MIN_COST_BOUND)) * 100));
-  const maxPercent = Math.max(0, Math.min(100, ((maxCost - MIN_COST_BOUND) / (MAX_COST_BOUND - MIN_COST_BOUND)) * 100));
+  const minPercent = Math.max(0, Math.min(100, ((draftMinCost - MIN_COST_BOUND) / (MAX_COST_BOUND - MIN_COST_BOUND)) * 100));
+  const maxPercent = Math.max(0, Math.min(100, ((draftMaxCost - MIN_COST_BOUND) / (MAX_COST_BOUND - MIN_COST_BOUND)) * 100));
 
   // Determine current active category object
-  const activeCategoryObj = SAREE_CATEGORIES.find((c) => c.id === selectedCategory) || SAREE_CATEGORIES[0];
+  const activeCategoryObj =
+    SAREE_CATEGORIES.find((c) => c.id === appliedFilters.category) || SAREE_CATEGORIES[0];
 
   // Check if filters are dirty (different from default)
   const isFilterActive =
-    selectedCategory !== 'all' ||
-    minCost !== MIN_COST_BOUND ||
-    maxCost !== MAX_COST_BOUND ||
-    !isAbove6500;
+    appliedFilters.category !== 'all' ||
+    appliedFilters.minCost !== MIN_COST_BOUND ||
+    appliedFilters.maxCost !== MAX_COST_BOUND ||
+    !appliedFilters.isAbove6500;
 
   // Real sarees filtering (when real product array is supplied)
   const filteredSarees = useMemo(() => {
     if (!sarees || sarees.length === 0) return [];
     return sarees.filter((saree) => {
-      if (selectedCategory !== 'all' && saree.category !== selectedCategory && saree.categoryId !== selectedCategory) {
+      if (
+        appliedFilters.category !== 'all' &&
+        saree.category !== appliedFilters.category &&
+        saree.categoryId !== appliedFilters.category
+      ) {
         return false;
       }
       const priceNum = Number(saree.cost || saree.price || 0);
-      if (priceNum < minCost) return false;
-      if (!isAbove6500 && priceNum > maxCost) return false;
+      if (priceNum < appliedFilters.minCost) return false;
+      if (!appliedFilters.isAbove6500 && priceNum > appliedFilters.maxCost) return false;
       return true;
     });
-  }, [sarees, selectedCategory, minCost, maxCost, isAbove6500]);
+  }, [sarees, appliedFilters]);
 
   return (
     <div className="our-collections-page" id="our-collections-page">
@@ -206,7 +409,7 @@ const OurCollections = ({
           <button
             type="button"
             className="col-mobile-toggle-btn"
-            onClick={() => setIsMobileDrawerOpen(true)}
+            onClick={handleOpenMobileDrawer}
             aria-label="Open filter sidebar"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -221,7 +424,7 @@ const OurCollections = ({
         {isMobileDrawerOpen && (
           <div
             className="col-drawer-backdrop"
-            onClick={() => setIsMobileDrawerOpen(false)}
+            onClick={handleCloseMobileDrawer}
             aria-hidden="true"
           />
         )}
@@ -258,7 +461,7 @@ const OurCollections = ({
                 <button
                   type="button"
                   className="col-sidebar-close-btn"
-                  onClick={() => setIsMobileDrawerOpen(false)}
+                  onClick={handleCloseMobileDrawer}
                   aria-label="Close filters"
                 >
                   ✕
@@ -294,7 +497,7 @@ const OurCollections = ({
               {/* Saree Categories List (Clean Full Display - No Scrollbox) */}
               <ul className="col-categories-list" role="radiogroup" aria-label="Saree Categories List">
                 {filteredCategoriesList.map((cat) => {
-                  const isActive = selectedCategory === cat.id;
+                  const isActive = draftCategory === cat.id;
                   return (
                     <li key={cat.id} className="col-cat-item">
                       <button
@@ -337,8 +540,8 @@ const OurCollections = ({
                 <div className="col-cost-readout-card">
                   <span className="col-cost-readout-lbl">Selected Range:</span>
                   <span className="col-cost-badge">
-                    ₹{minCost.toLocaleString('en-IN')} – ₹{maxCost.toLocaleString('en-IN')}
-                    {isAbove6500 && maxCost >= MAX_COST_BOUND ? '+' : ''}
+                    ₹{draftMinCost.toLocaleString('en-IN')} – ₹{draftMaxCost.toLocaleString('en-IN')}
+                    {draftIsAbove6500 && draftMaxCost >= MAX_COST_BOUND ? '+' : ''}
                   </span>
                 </div>
 
@@ -362,7 +565,7 @@ const OurCollections = ({
                     min={MIN_COST_BOUND}
                     max={MAX_COST_BOUND}
                     step={COST_STEP}
-                    value={minCost}
+                    value={draftMinCost}
                     onChange={handleMinSliderChange}
                     className="col-range-slider-input"
                     aria-label="Minimum cost"
@@ -374,7 +577,7 @@ const OurCollections = ({
                     min={MIN_COST_BOUND}
                     max={MAX_COST_BOUND}
                     step={COST_STEP}
-                    value={maxCost}
+                    value={draftMaxCost}
                     onChange={handleMaxSliderChange}
                     className="col-range-slider-input"
                     aria-label="Maximum cost"
@@ -383,13 +586,13 @@ const OurCollections = ({
 
                 {/* Neatly Spaced Slider Endpoints Markers */}
                 <div className="col-slider-markers" aria-hidden="true">
-                  <span className={`marker-endpoint ${minCost === MIN_COST_BOUND ? 'active-limit' : ''}`}>
+                  <span className={`marker-endpoint ${draftMinCost === MIN_COST_BOUND ? 'active-limit' : ''}`}>
                     ₹450
                   </span>
                   <span className="marker-mid">₹2,500</span>
                   <span className="marker-mid">₹4,500</span>
-                  <span className={`marker-endpoint ${maxCost === MAX_COST_BOUND ? 'active-limit' : ''}`}>
-                    ₹6,500{isAbove6500 ? '+' : ''}
+                  <span className={`marker-endpoint ${draftMaxCost === MAX_COST_BOUND ? 'active-limit' : ''}`}>
+                    ₹6,500{draftIsAbove6500 ? '+' : ''}
                   </span>
                 </div>
 
@@ -397,14 +600,14 @@ const OurCollections = ({
                 <div className="col-above-toggle-wrap">
                   <button
                     type="button"
-                    className={`col-above-toggle-btn ${isAbove6500 ? 'is-active' : ''}`}
+                    className={`col-above-toggle-btn ${draftIsAbove6500 ? 'is-active' : ''}`}
                     onClick={handleToggleAbove}
                   >
                     <span className="col-above-toggle-text">
                       Expand to <strong>₹6,500 &amp; Above</strong>
                     </span>
                     <span className="col-above-checkbox">
-                      {isAbove6500 ? '✓' : ''}
+                      {draftIsAbove6500 ? '✓' : ''}
                     </span>
                   </button>
                 </div>
@@ -419,19 +622,16 @@ const OurCollections = ({
                       <span className="col-input-currency">₹</span>
                       <input
                         id="col-min-cost-input"
-                        type="number"
-                        min={MIN_COST_BOUND}
-                        max={maxCost}
-                        step={50}
-                        value={minCost}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          if (!Number.isNaN(val) && val >= MIN_COST_BOUND && val <= maxCost) {
-                            setMinCost(val);
-                            notifyFilterChange(selectedCategory, val, maxCost, isAbove6500);
-                          }
-                        }}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={minCostInput}
+                        onChange={handleMinCostInputChange}
+                        onBlur={handleMinCostInputBlur}
+                        onKeyDown={handleMinCostKeyDown}
+                        placeholder={String(MIN_COST_BOUND)}
                         className="col-cost-number-input"
+                        aria-label="Minimum cost in rupees"
                       />
                     </div>
                   </div>
@@ -446,19 +646,16 @@ const OurCollections = ({
                       <span className="col-input-currency">₹</span>
                       <input
                         id="col-max-cost-input"
-                        type="number"
-                        min={minCost}
-                        max={MAX_COST_BOUND}
-                        step={50}
-                        value={maxCost}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          if (!Number.isNaN(val) && val >= minCost && val <= MAX_COST_BOUND) {
-                            setMaxCost(val);
-                            notifyFilterChange(selectedCategory, minCost, val, isAbove6500);
-                          }
-                        }}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={maxCostInput}
+                        onChange={handleMaxCostInputChange}
+                        onBlur={handleMaxCostInputBlur}
+                        onKeyDown={handleMaxCostKeyDown}
+                        placeholder={String(MAX_COST_BOUND)}
                         className="col-cost-number-input"
+                        aria-label="Maximum cost in rupees"
                       />
                     </div>
                   </div>
@@ -470,7 +667,7 @@ const OurCollections = ({
                   <div className="col-presets-grid">
                     {PRICE_PRESETS.map((p) => {
                       const isPresetActive =
-                        minCost === p.min && maxCost === p.max && isAbove6500 === p.above;
+                        draftMinCost === p.min && draftMaxCost === p.max && draftIsAbove6500 === p.above;
                       return (
                         <button
                           key={p.label}
@@ -493,7 +690,7 @@ const OurCollections = ({
               <button
                 type="button"
                 className="col-apply-btn"
-                onClick={() => setIsMobileDrawerOpen(false)}
+                onClick={handleApplyFilters}
               >
                 Apply Filters
               </button>
@@ -524,8 +721,8 @@ const OurCollections = ({
                   </span>
                 </h2>
                 <p className="col-topbar-filter-desc">
-                  Filtering sarees within range: ₹{minCost.toLocaleString('en-IN')} – ₹{maxCost.toLocaleString('en-IN')}
-                  {isAbove6500 && maxCost >= MAX_COST_BOUND ? '+' : ''}
+                  Filtering sarees within range: ₹{appliedFilters.minCost.toLocaleString('en-IN')} – ₹{appliedFilters.maxCost.toLocaleString('en-IN')}
+                  {appliedFilters.isAbove6500 && appliedFilters.maxCost >= MAX_COST_BOUND ? '+' : ''}
                 </p>
               </div>
 
@@ -554,13 +751,13 @@ const OurCollections = ({
               <div className="col-active-pills-bar" aria-label="Active Filters">
                 <span className="col-active-pills-label">Active Filters:</span>
 
-                {selectedCategory !== 'all' && (
+                {appliedFilters.category !== 'all' && (
                   <span className="col-filter-pill">
                     Category: {activeCategoryObj.name}
                     <button
                       type="button"
                       className="col-filter-pill-remove"
-                      onClick={() => handleSelectCategory('all')}
+                      onClick={handleRemoveCategoryPill}
                       aria-label="Remove category filter"
                     >
                       ×
@@ -569,17 +766,12 @@ const OurCollections = ({
                 )}
 
                 <span className="col-filter-pill">
-                  Price: ₹{minCost.toLocaleString('en-IN')} – ₹{maxCost.toLocaleString('en-IN')}
-                  {isAbove6500 && maxCost >= MAX_COST_BOUND ? '+' : ''}
+                  Price: ₹{appliedFilters.minCost.toLocaleString('en-IN')} – ₹{appliedFilters.maxCost.toLocaleString('en-IN')}
+                  {appliedFilters.isAbove6500 && appliedFilters.maxCost >= MAX_COST_BOUND ? '+' : ''}
                   <button
                     type="button"
                     className="col-filter-pill-remove"
-                    onClick={() => {
-                      setMinCost(MIN_COST_BOUND);
-                      setMaxCost(MAX_COST_BOUND);
-                      setIsAbove6500(true);
-                      notifyFilterChange(selectedCategory, MIN_COST_BOUND, MAX_COST_BOUND, true);
-                    }}
+                    onClick={handleRemovePricePill}
                     aria-label="Reset price filter"
                   >
                     ×
@@ -656,8 +848,8 @@ const OurCollections = ({
                   <div className="col-spec-item">
                     <span className="col-spec-lbl">Cost Range:</span>
                     <span className="col-spec-val">
-                      ₹{minCost.toLocaleString('en-IN')} – ₹{maxCost.toLocaleString('en-IN')}
-                      {isAbove6500 && maxCost >= MAX_COST_BOUND ? '+' : ''}
+                      ₹{appliedFilters.minCost.toLocaleString('en-IN')} – ₹{appliedFilters.maxCost.toLocaleString('en-IN')}
+                      {appliedFilters.isAbove6500 && appliedFilters.maxCost >= MAX_COST_BOUND ? '+' : ''}
                     </span>
                   </div>
                   <span className="col-spec-sep">✦</span>

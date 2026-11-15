@@ -13,10 +13,28 @@ export const PRODUCT_GRID_CONFIGS = [
 
 export const DEFAULT_GRID_VIEW = '4x4';
 
+/**
+ * Authentic Saree Categories matching our-collections.jsx
+ */
+export const SAREE_CATEGORIES = [
+  { id: 'all', name: 'All Sarees', telugu: 'అన్ని చీరలు', tag: 'All Weaves' },
+  { id: 'royal-dola-silk', name: 'Royal Dola Silk', telugu: 'రాయల్ డోలా సిల్క్', tag: 'Festive Classic' },
+  { id: 'banarasi-silk', name: 'Banarasi Silk', telugu: 'బనారసి సిల్క్', tag: 'Zari Brocade' },
+  { id: 'uppada-silk', name: 'Uppada Silk', telugu: 'ఉప్పాడ పట్టు', tag: 'Jamdani Pure' },
+  { id: 'mangalagiri-pattu', name: 'Mangalagiri Pattu', telugu: 'మంగళగిరి పట్టు', tag: 'Nizam Border' },
+  { id: 'pure-handloom', name: 'Pure Handloom Sarees', telugu: 'చేనేత చీరలు', tag: 'Artisan Pride' },
+  { id: 'designer-silk', name: 'Designer Silk Sarees', telugu: 'డిజైనర్ సిల్క్', tag: 'Party Drapes' },
+  { id: 'organza-tissue', name: 'Organza & Tissue Sarees', telugu: 'ఆర్గాన్జా సిల్క్', tag: 'Sheer Glow' },
+  { id: 'chanderi-maheshwari', name: 'Chanderi & Maheshwari', telugu: 'మహేశ్వరి సిల్క్', tag: 'Royal Weave' },
+  { id: 'chiffon-georgette', name: 'Chiffon & Georgette', telugu: 'షిఫాన్ & జార్జెట్', tag: 'Lightweight' },
+  { id: 'pure-cotton', name: 'Pure Cotton Sarees', telugu: 'ప్యూర్ కాటన్', tag: 'Daily Comfort' }
+];
+
 // Blank initial form state for adding/editing products
 export const EMPTY_PRODUCT_FORM = {
   productId: '',
   name: '',
+  category: '',
   description: '',
   firstImageUrl: '',
   hoverImageUrl: '',

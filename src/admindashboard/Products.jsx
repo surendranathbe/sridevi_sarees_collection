@@ -4,9 +4,12 @@ import {
   DEFAULT_GRID_VIEW,
   EMPTY_PRODUCT_FORM,
   validateProductForm,
-  formatIndianCurrency
+  formatIndianCurrency,
+  SAREE_CATEGORIES
 } from '../data/products';
 import { apiFetch, uploadImageFile } from '../utils/api';
+
+const PRODUCT_SAREE_CATEGORIES = SAREE_CATEGORIES.filter((cat) => cat.id !== 'all');
 
 /**
  * Products Management Component
@@ -46,6 +49,7 @@ const Products = ({
     setFormData({
       productId: product.productId || '',
       name: product.name || '',
+      category: product.category || product.categoryId || '',
       description: product.description || '',
       firstImageUrl: product.firstImageUrl || '',
       hoverImageUrl: product.hoverImageUrl || '',
@@ -124,6 +128,7 @@ const Products = ({
     const formattedProduct = {
       productId: formData.productId.trim(),
       name: formData.name.trim(),
+      category: formData.category ? formData.category.trim() : '',
       description: formData.description.trim(),
       firstImageUrl: formData.firstImageUrl.trim(),
       hoverImageUrl: formData.hoverImageUrl.trim(),
@@ -356,6 +361,22 @@ const Products = ({
                     {/* Name of Product */}
                     <td>
                       <strong className="admin-table-name">{product.name}</strong>
+                      {product.category && (
+                        <div style={{ marginTop: '0.25rem' }}>
+                          <span style={{
+                            fontSize: '0.72rem',
+                            fontWeight: 600,
+                            padding: '0.12rem 0.45rem',
+                            borderRadius: '4px',
+                            background: '#fdf4ea',
+                            color: '#9a611a',
+                            border: '1px solid #fed7aa',
+                            display: 'inline-block'
+                          }}>
+                            {PRODUCT_SAREE_CATEGORIES.find((c) => c.id === product.category)?.name || product.category}
+                          </span>
+                        </div>
+                      )}
                     </td>
 
                     {/* Description */}
@@ -444,6 +465,23 @@ const Products = ({
                     {formatIndianCurrency(product.cost)}
                   </span>
                 </div>
+
+                {product.category && (
+                  <div style={{ marginTop: '0.35rem' }}>
+                    <span style={{
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      padding: '0.12rem 0.4rem',
+                      borderRadius: '4px',
+                      background: '#fdf4ea',
+                      color: '#9a611a',
+                      border: '1px solid #fed7aa',
+                      display: 'inline-block'
+                    }}>
+                      {PRODUCT_SAREE_CATEGORIES.find((c) => c.id === product.category)?.name || product.category}
+                    </span>
+                  </div>
+                )}
 
                 <h3 className="admin-product-name" title={product.name}>
                   {product.name}
@@ -554,6 +592,29 @@ const Products = ({
                 {formErrors.name && (
                   <span className="admin-form-error-msg">{formErrors.name}</span>
                 )}
+              </div>
+
+              {/* Field: Saree Category (from our-collections.jsx) */}
+              <div className="admin-form-group">
+                <label htmlFor="modal-product-category" className="admin-form-label">
+                  <span>
+                    Saree Category
+                  </span>
+                </label>
+                <select
+                  id="modal-product-category"
+                  name="category"
+                  className="admin-form-input admin-form-select"
+                  value={formData.category || ''}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Saree Category</option>
+                  {PRODUCT_SAREE_CATEGORIES.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name} ({cat.telugu})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Field 3: Description */}
