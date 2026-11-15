@@ -395,6 +395,10 @@ function App() {
   const aboutRef = useRef(null);
   const occasionScrollRef = useRef(null);
   const isOccasionPaused = useRef(false);
+  const collectionsScrollRef = useRef(null);
+  const isCollectionsPaused = useRef(false);
+  const blouseScrollRef = useRef(null);
+  const isBlousePaused = useRef(false);
   const reviewsScrollRef = useRef(null);
   const isReviewsPaused = useRef(false);
   const activeDrape = featuredDrapes.find((d) => d.id === selectedDrapeId) || featuredDrapes[0];
@@ -564,7 +568,54 @@ function App() {
     if (!occasionScrollRef.current) return;
     const container = occasionScrollRef.current;
     const firstCard = container.querySelector('.occasion-card');
-    const scrollDelta = firstCard ? firstCard.offsetWidth + 16 : 280;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const scrollDelta = isMobile ? container.clientWidth : (firstCard ? firstCard.offsetWidth + 20 : 280);
+    const maxScroll = container.scrollWidth - container.clientWidth;
+
+    if (direction === 'next') {
+      if (container.scrollLeft >= maxScroll - 15) {
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: scrollDelta, behavior: 'smooth' });
+      }
+    } else {
+      if (container.scrollLeft <= 15) {
+        container.scrollTo({ left: maxScroll, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: -scrollDelta, behavior: 'smooth' });
+      }
+    }
+  };
+
+  const handleCollectionsScroll = (direction) => {
+    if (!collectionsScrollRef.current) return;
+    const container = collectionsScrollRef.current;
+    const firstCard = container.querySelector('.collection-card');
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const scrollDelta = isMobile ? container.clientWidth : (firstCard ? firstCard.offsetWidth + 24 : 280);
+    const maxScroll = container.scrollWidth - container.clientWidth;
+
+    if (direction === 'next') {
+      if (container.scrollLeft >= maxScroll - 15) {
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: scrollDelta, behavior: 'smooth' });
+      }
+    } else {
+      if (container.scrollLeft <= 15) {
+        container.scrollTo({ left: maxScroll, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: -scrollDelta, behavior: 'smooth' });
+      }
+    }
+  };
+
+  const handleBlouseScroll = (direction) => {
+    if (!blouseScrollRef.current) return;
+    const container = blouseScrollRef.current;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const firstCard = container.querySelector('.blouse-mobile-card');
+    const scrollDelta = isMobile ? container.clientWidth : (firstCard ? firstCard.offsetWidth + 20 : 300);
     const maxScroll = container.scrollWidth - container.clientWidth;
 
     if (direction === 'next') {
@@ -618,8 +669,9 @@ function App() {
     const intervalId = setInterval(() => {
       if (isOccasionPaused.current || isPageScrolling.current || !isVisible) return;
 
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
       const firstCard = container.querySelector('.occasion-card');
-      const scrollDelta = firstCard ? firstCard.offsetWidth + 16 : 280;
+      const scrollDelta = isMobile ? container.clientWidth : (firstCard ? firstCard.offsetWidth + 20 : 280);
       const maxScroll = container.scrollWidth - container.clientWidth;
 
       if (container.scrollLeft >= maxScroll - 15) {
@@ -635,11 +687,80 @@ function App() {
     };
   }, []);
 
+  // Auto-scroll Our Collections on mobile screens
+  useEffect(() => {
+    const container = collectionsScrollRef.current;
+    if (!container) return;
+
+    let isVisible = true;
+    let observer;
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(([entry]) => {
+        isVisible = entry.isIntersecting;
+      }, { threshold: 0.1 });
+      observer.observe(container);
+    }
+
+    const intervalId = setInterval(() => {
+      if (isCollectionsPaused.current || isPageScrolling.current || !isVisible) return;
+      if (typeof window !== 'undefined' && window.innerWidth > 768) return;
+
+      const scrollDelta = container.clientWidth;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+
+      if (container.scrollLeft >= maxScroll - 15) {
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: scrollDelta, behavior: 'smooth' });
+      }
+    }, 3500);
+
+    return () => {
+      clearInterval(intervalId);
+      if (observer) observer.disconnect();
+    };
+  }, []);
+
+  // Auto-scroll Our Blouse Collection on mobile screens
+  useEffect(() => {
+    const container = blouseScrollRef.current;
+    if (!container) return;
+
+    let isVisible = true;
+    let observer;
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(([entry]) => {
+        isVisible = entry.isIntersecting;
+      }, { threshold: 0.1 });
+      observer.observe(container);
+    }
+
+    const intervalId = setInterval(() => {
+      if (isBlousePaused.current || isPageScrolling.current || !isVisible) return;
+      if (typeof window !== 'undefined' && window.innerWidth > 768) return;
+
+      const scrollDelta = container.clientWidth;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+
+      if (container.scrollLeft >= maxScroll - 15) {
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: scrollDelta, behavior: 'smooth' });
+      }
+    }, 3400);
+
+    return () => {
+      clearInterval(intervalId);
+      if (observer) observer.disconnect();
+    };
+  }, []);
+
   const handleReviewsScroll = (direction) => {
     if (!reviewsScrollRef.current) return;
     const container = reviewsScrollRef.current;
     const firstCard = container.querySelector('.review-card');
-    const scrollDelta = firstCard ? firstCard.offsetWidth + 24 : 380;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const scrollDelta = isMobile ? container.clientWidth : (firstCard ? firstCard.offsetWidth + 24 : 380);
     const maxScroll = container.scrollWidth - container.clientWidth;
 
     if (direction === 'next') {
@@ -674,8 +795,9 @@ function App() {
     const intervalId = setInterval(() => {
       if (isReviewsPaused.current || isPageScrolling.current || !isVisible) return;
 
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
       const firstCard = container.querySelector('.review-card');
-      const scrollDelta = firstCard ? firstCard.offsetWidth + 24 : 380;
+      const scrollDelta = isMobile ? container.clientWidth : (firstCard ? firstCard.offsetWidth + 24 : 380);
       const maxScroll = container.scrollWidth - container.clientWidth;
 
       if (container.scrollLeft >= maxScroll - 15) {
@@ -1082,109 +1204,139 @@ function App() {
               </p>
             </div>
 
-            {/* Responsive Saree Product Grid */}
-            <div className="collections-grid">
-              {ourCollections.map((item) => {
-                const isFavorited = !!wishlist[item.id];
-                const isTouchActive = touchActiveId === item.id;
+            {/* Responsive Saree Product Grid (Sliding Carousel on Mobile, 4-Col Grid on Desktop) */}
+            <div
+              className="collections-slider-wrap"
+              onMouseEnter={() => { isCollectionsPaused.current = true; }}
+              onMouseLeave={() => { isCollectionsPaused.current = false; }}
+              onTouchStart={() => { isCollectionsPaused.current = true; }}
+              onTouchEnd={() => { isCollectionsPaused.current = false; }}
+            >
+              <button
+                type="button"
+                className="collections-nav-btn collections-nav-prev"
+                onClick={() => handleCollectionsScroll('prev')}
+                aria-label="Previous saree collection"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
 
-                return (
-                  <article
-                    key={item.id}
-                    className={`collection-card ${isTouchActive ? 'touch-active' : ''}`}
-                    onClick={() => setTouchActiveId(touchActiveId === item.id ? null : item.id)}
-                  >
-                    {/* Media Container with Saree -> Model Hover Swap */}
-                    <div className="collection-media-box">
-                      {/* 1. Saree Only (Shown initially) */}
-                      <img
-                        src={item.sareeImg}
-                        alt={item.name}
-                        className="collection-img saree-only-img"
-                        loading="lazy"
-                        decoding="async"
-                      />
+              <div className="collections-grid" ref={collectionsScrollRef}>
+                {ourCollections.map((item) => {
+                  const isFavorited = !!wishlist[item.id];
+                  const isTouchActive = touchActiveId === item.id;
 
-                      {/* 2. Female Model Wearing the Saree (Shown on hover) */}
-                      <img
-                        src={item.modelImg}
-                        alt={`${item.name} draped on model`}
-                        className="collection-img model-wearing-img"
-                        loading="lazy"
-                        decoding="async"
-                      />
+                  return (
+                    <article
+                      key={item.id}
+                      className={`collection-card ${isTouchActive ? 'touch-active' : ''}`}
+                      onClick={() => setTouchActiveId(touchActiveId === item.id ? null : item.id)}
+                    >
+                      {/* Media Container with Saree -> Model Hover Swap */}
+                      <div className="collection-media-box">
+                        {/* 1. Saree Only (Shown initially) */}
+                        <img
+                          src={item.sareeImg}
+                          alt={item.name}
+                          className="collection-img saree-only-img"
+                          loading="lazy"
+                          decoding="async"
+                        />
 
-                      {/* Floating Action Icons: Wishlist Heart & Bag */}
-                      <div className="collection-card-actions">
-                        <button
-                          type="button"
-                          className={`card-action-btn ${isFavorited ? 'is-favorited' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleWishlist(item.id);
-                          }}
-                          aria-label={isFavorited ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                          title={isFavorited ? 'Added to Wishlist' : 'Add to Wishlist'}
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill={isFavorited ? '#e11d48' : 'none'}
-                            stroke={isFavorited ? '#e11d48' : '#2b0c1e'}
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                        {/* 2. Female Model Wearing the Saree (Shown on hover) */}
+                        <img
+                          src={item.modelImg}
+                          alt={`${item.name} draped on model`}
+                          className="collection-img model-wearing-img"
+                          loading="lazy"
+                          decoding="async"
+                        />
+
+                        {/* Floating Action Icons: Wishlist Heart & Bag */}
+                        <div className="collection-card-actions">
+                          <button
+                            type="button"
+                            className={`card-action-btn ${isFavorited ? 'is-favorited' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleWishlist(item.id);
+                            }}
+                            aria-label={isFavorited ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                            title={isFavorited ? 'Added to Wishlist' : 'Add to Wishlist'}
                           >
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                          </svg>
-                        </button>
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill={isFavorited ? '#e11d48' : 'none'}
+                              stroke={isFavorited ? '#e11d48' : '#2b0c1e'}
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                          </button>
 
-                        <button
-                          type="button"
-                          className="card-action-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                          aria-label="Add to Bag"
-                          title="Add to Bag"
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#2b0c1e"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                          <button
+                            type="button"
+                            className="card-action-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                            aria-label="Add to Bag"
+                            title="Add to Bag"
                           >
-                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                            <line x1="3" y1="6" x2="21" y2="6" />
-                            <path d="M16 10a4 4 0 0 1-8 0" />
-                          </svg>
-                        </button>
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="#2b0c1e"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                              <line x1="3" y1="6" x2="21" y2="6" />
+                              <path d="M16 10a4 4 0 0 1-8 0" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {/* Subtle Hover/Tap Indicator */}
+                        <div className="collection-drape-indicator">
+                          <span>Hover for drape</span>
+                        </div>
                       </div>
 
-                      {/* Subtle Hover/Tap Indicator */}
-                      <div className="collection-drape-indicator">
-                        <span>Hover for drape</span>
+                      {/* Saree Details matching reference photo */}
+                      <div className="collection-card-details">
+                        <h3 className="collection-saree-title" title={item.name}>
+                          {item.name}
+                        </h3>
+                        <div className="collection-price-wrap">
+                          <span className="price-as-low">As low as</span>
+                          <span className="price-amount">{item.price}</span>
+                        </div>
                       </div>
-                    </div>
+                    </article>
+                  );
+                })}
+              </div>
 
-                    {/* Saree Details matching reference photo */}
-                    <div className="collection-card-details">
-                      <h3 className="collection-saree-title" title={item.name}>
-                        {item.name}
-                      </h3>
-                      <div className="collection-price-wrap">
-                        <span className="price-as-low">As low as</span>
-                        <span className="price-amount">{item.price}</span>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
+              <button
+                type="button"
+                className="collections-nav-btn collections-nav-next"
+                onClick={() => handleCollectionsScroll('next')}
+                aria-label="Next saree collection"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
             </div>
           </div>
         </section>
@@ -1223,8 +1375,8 @@ function App() {
               </div>
             </div>
 
-            {/* Distinctive Responsive Layout: Spotlight Showcase + Gallery */}
-            <div className="blouse-showcase-layout">
+            {/* Distinctive Responsive Layout: Spotlight Showcase + Gallery (Desktop) */}
+            <div className="blouse-showcase-layout blouse-desktop-layout">
               {/* Left Column: Spotlight Masterpiece (Bridal Rani Pink) */}
               {selectedBlouseCat === 'All Designs' && (
                 <div className="blouse-spotlight-col">
@@ -1318,6 +1470,86 @@ function App() {
                   </article>
                 ))}
               </div>
+            </div>
+
+            {/* Mobile Showcase Layout: Single Card Smooth Scrolling Track */}
+            <div
+              className="blouse-mobile-slider-wrap"
+              onMouseEnter={() => { isBlousePaused.current = true; }}
+              onMouseLeave={() => { isBlousePaused.current = false; }}
+              onTouchStart={() => { isBlousePaused.current = true; }}
+              onTouchEnd={() => { isBlousePaused.current = false; }}
+            >
+              <button
+                type="button"
+                className="blouse-nav-btn blouse-nav-prev"
+                onClick={() => handleBlouseScroll('prev')}
+                aria-label="Previous blouse design"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+
+              <div className="blouse-mobile-slider-track" ref={blouseScrollRef}>
+                {(selectedBlouseCat === 'All Designs' ? blouseCollection : (
+                  blouseCollection.filter((b) => b.category === selectedBlouseCat)
+                )).map((item) => (
+                  <article key={item.id} className="blouse-mobile-card">
+                    <div className="blouse-mobile-card-inner">
+                      <div className="blouse-card-badge">
+                        <span>{item.tag}</span>
+                      </div>
+
+                      <div className="blouse-media-frame">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="blouse-table-photo"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <div className="blouse-finish-chip">
+                          <span>Completed Computer Work</span>
+                        </div>
+                      </div>
+
+                      <div className="blouse-card-info">
+                        <span className="blouse-cat-tag">{item.category}</span>
+                        <h4 className="blouse-item-name" title={item.title}>{item.title}</h4>
+                        <p className="blouse-item-fabric">{item.fabric}</p>
+
+                        <div className="blouse-card-bottom">
+                          <div className="blouse-price-cluster">
+                            <span className="current-price">{item.price}</span>
+                            <span className="was-price">{item.originalPrice}</span>
+                          </div>
+                          <a
+                            href={`https://wa.me/919849837338?text=Hello%20Sridevi%20Sarees,%20I%20am%20interested%20in%20${encodeURIComponent(item.title)}`}
+                            className="blouse-quick-book-btn"
+                            title="Enquire on WhatsApp"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Book Stitch
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="blouse-nav-btn blouse-nav-next"
+                onClick={() => handleBlouseScroll('next')}
+                aria-label="Next blouse design"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
             </div>
 
             {/* Custom Tailoring & Embroidery Assistance Ribbon */}

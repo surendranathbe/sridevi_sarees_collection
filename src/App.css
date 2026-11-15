@@ -977,20 +977,21 @@ html {
   }
 }
 
-/* Mobile Screens (< 768px): Exactly 2 images with sliding effect */
+/* Mobile Screens (< 768px): Single full-width sliding image with neat alignment without cutting edges */
 @media (max-width: 767px) {
   .occasion-section {
-    padding: 3.5rem 1rem 3rem;
+    padding: 3.5rem 0.75rem 3rem;
   }
 
   .occasion-header {
     margin-bottom: 2rem;
+    padding: 0 0.5rem;
   }
 
   .occasion-title {
-    font-size: 1.15rem;
-    line-height: 1.4;
-    letter-spacing: 0.06em;
+    font-size: 1.35rem;
+    line-height: 1.35;
+    letter-spacing: 0.05em;
   }
 
   .occasion-subtitle {
@@ -998,58 +999,111 @@ html {
     line-height: 1.5;
   }
 
+  .occasion-slider-wrap {
+    position: relative;
+    width: 100%;
+    padding: 0 2rem;
+    box-sizing: border-box;
+  }
+
   .occasion-track {
-    gap: 0.75rem;
-    padding: 0.5rem 0.1rem 1rem;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    gap: 0;
+    padding: 0.5rem 0 1.25rem;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .occasion-track::-webkit-scrollbar {
+    display: none;
   }
 
   .occasion-card {
-    flex: 0 0 calc((100% - 0.75rem) / 2);
-    min-width: calc((100% - 0.75rem) / 2);
-    scroll-snap-align: start;
-    border-radius: 12px;
+    flex: 0 0 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    box-sizing: border-box;
+    padding: 0 0.4rem;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .occasion-card-inner {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    aspect-ratio: 3 / 4.2;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #1a0613;
+    box-shadow: 0 10px 28px rgba(43, 12, 30, 0.16);
+    border: 1.5px solid rgba(198, 146, 62, 0.4);
+    position: relative;
   }
 
   .occasion-top-badge {
-    top: 10px;
-    left: 10px;
-    padding: 0.25rem 0.6rem;
-    font-size: 0.58rem;
+    top: 12px;
+    left: 12px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.65rem;
     letter-spacing: 0.08em;
   }
 
   .occasion-card-content {
-    padding: 1rem 0.5rem 1.15rem;
+    padding: 1.25rem 1rem 1.4rem;
+    text-align: center;
   }
 
   .occasion-card-title {
-    font-size: 1.05rem;
-    margin-bottom: 0.25rem;
+    font-size: 1.3rem;
+    margin-bottom: 0.3rem;
+    line-height: 1.25;
   }
 
   .occasion-card-sub {
-    font-size: 0.62rem;
-    margin-bottom: 0.65rem;
+    font-size: 0.76rem;
+    margin-bottom: 0.85rem;
+    color: #dfb76c;
   }
 
   .occasion-shop-btn {
-    padding: 0.45rem 1rem;
-    font-size: 0.65rem;
+    padding: 0.55rem 1.35rem;
+    font-size: 0.72rem;
     letter-spacing: 0.12em;
-    gap: 0.35rem;
+    gap: 0.4rem;
   }
 
   .occasion-nav-btn {
-    width: 36px;
-    height: 36px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 48%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #580c29;
+    border: 1.5px solid rgba(198, 146, 62, 0.4);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    z-index: 10;
+    cursor: pointer;
   }
 
   .occasion-nav-prev {
-    left: -8px;
+    left: 0;
   }
 
   .occasion-nav-next {
-    right: -8px;
+    right: 0;
   }
 }
 
@@ -1251,6 +1305,15 @@ html {
   padding-top: 0.85rem;
 }
 
+.collections-slider-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.collections-nav-btn {
+  display: none;
+}
+
 .collection-saree-title {
   font-family: 'Montserrat', sans-serif;
   font-size: 0.96rem;
@@ -1258,9 +1321,11 @@ html {
   color: #1a1a1a;
   margin: 0 0 0.35rem;
   line-height: 1.35;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  white-space: nowrap;
+  min-height: 2.7em;
 }
 
 .collection-price-wrap {
@@ -1286,8 +1351,8 @@ html {
    RESPONSIVENESS (iPad, Tablets & Mobile Screens)
    ========================================================= */
 
-/* Tablets / iPad (641px - 1024px) */
-@media (max-width: 1024px) {
+/* Tablets / iPad (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
   .our-collections-section {
     padding: 4rem 1.5rem;
   }
@@ -1300,13 +1365,14 @@ html {
   }
 }
 
-/* Mobile Screens (<= 640px) */
-@media (max-width: 640px) {
+/* Mobile Screens (<= 768px): Neat single sliding scrolling effect with no cut-off edges */
+@media (max-width: 768px) {
   .our-collections-section {
-    padding: 3rem 1rem 3.5rem;
+    padding: 3rem 0.75rem 3.5rem;
   }
   .collections-header {
     margin-bottom: 2rem;
+    padding: 0 0.5rem;
   }
   .collections-title {
     font-size: 1.45rem;
@@ -1314,13 +1380,98 @@ html {
   .collections-subtitle {
     font-size: 0.82rem;
   }
+  .collections-slider-wrap {
+    position: relative;
+    width: 100%;
+    padding: 0 2rem;
+    box-sizing: border-box;
+  }
+  .collections-nav-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #580c29;
+    border: 1.5px solid rgba(198, 146, 62, 0.4);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    z-index: 10;
+    cursor: pointer;
+  }
+  .collections-nav-prev {
+    left: 0;
+  }
+  .collections-nav-next {
+    right: 0;
+  }
   .collections-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    display: flex !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    gap: 0;
+    padding: 0.5rem 0 1.25rem;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .collections-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .collection-card {
+    flex: 0 0 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    padding: 0 0.4rem;
+  }
+  .collection-media-box {
+    width: 100%;
+    max-width: 310px;
+    margin: 0 auto;
+    aspect-ratio: 3 / 4.3;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(43, 12, 30, 0.08);
+    border: 1px solid rgba(216, 195, 165, 0.5);
+  }
+  .collection-card-details {
+    max-width: 310px;
+    margin: 0.75rem auto 0;
+    text-align: center;
+    width: 100%;
+  }
+  .collection-saree-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #2b0c1e;
+    min-height: auto;
+    display: block;
+    white-space: normal;
+  }
+  .collection-price-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .price-as-low {
+    font-size: 0.74rem;
+  }
+  .price-amount {
+    font-size: 0.88rem;
   }
   .collection-card-actions {
-    top: 8px;
-    right: 8px;
+    top: 10px;
+    right: 10px;
     gap: 6px;
   }
   .card-action-btn {
@@ -1330,16 +1481,6 @@ html {
   .card-action-btn svg {
     width: 15px;
     height: 15px;
-  }
-  .collection-saree-title {
-    font-size: 0.8rem;
-    margin-bottom: 0.2rem;
-  }
-  .price-as-low {
-    font-size: 0.72rem;
-  }
-  .price-amount {
-    font-size: 0.82rem;
   }
   .collection-drape-indicator {
     opacity: 0.85;
@@ -1855,11 +1996,19 @@ html {
   box-shadow: 0 6px 18px rgba(223, 183, 108, 0.5);
 }
 
+.blouse-mobile-slider-wrap {
+  display: none;
+}
+
+.blouse-nav-btn {
+  display: none;
+}
+
 /* =========================================================
    BLOUSE SECTION RESPONSIVENESS (iPad, Tablets, Mobile)
    ========================================================= */
 
-@media (max-width: 1024px) {
+@media (min-width: 769px) and (max-width: 1024px) {
   .blouse-section {
     padding: 4.5rem 1.5rem 5rem;
   }
@@ -1876,13 +2025,137 @@ html {
   .blouse-title {
     font-size: 1.85rem;
   }
+  .blouse-mobile-slider-wrap {
+    display: none !important;
+  }
 }
 
+/* Mobile Screens (<= 768px): One by one image slider with smooth scrolling and no cutting edges */
 @media (max-width: 768px) {
-  .blouse-cards-grid,
-  .blouse-cards-grid.full-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.85rem;
+  .blouse-section {
+    padding: 3.5rem 0.75rem 4rem;
+  }
+  .blouse-header {
+    margin-bottom: 2rem;
+    padding: 0 0.5rem;
+  }
+  .blouse-title {
+    font-size: 1.45rem;
+    line-height: 1.35;
+  }
+  .blouse-subtitle {
+    font-size: 0.82rem;
+  }
+  .blouse-filter-bar {
+    gap: 0.45rem;
+    margin-bottom: 1.5rem;
+  }
+  .blouse-filter-btn {
+    font-size: 0.72rem;
+    padding: 0.4rem 0.9rem;
+  }
+  .blouse-desktop-layout {
+    display: none !important;
+  }
+  .blouse-mobile-slider-wrap {
+    display: flex !important;
+    position: relative;
+    width: 100%;
+    padding: 0 2rem;
+    box-sizing: border-box;
+    margin-bottom: 2.5rem;
+  }
+  .blouse-mobile-slider-track {
+    display: flex !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    gap: 0;
+    padding: 0.5rem 0 1.25rem;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .blouse-mobile-slider-track::-webkit-scrollbar {
+    display: none;
+  }
+  .blouse-mobile-card {
+    flex: 0 0 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    padding: 0 0.4rem;
+    display: flex;
+    justify-content: center;
+  }
+  .blouse-mobile-card-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1.5px solid rgba(198, 146, 62, 0.4);
+    box-shadow: 0 8px 24px rgba(43, 12, 30, 0.08);
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .blouse-mobile-card-inner .blouse-media-frame {
+    aspect-ratio: 4 / 3.3;
+  }
+  .blouse-mobile-card-inner .blouse-card-info {
+    padding: 0.85rem 0.85rem 0.95rem;
+  }
+  .blouse-mobile-card-inner .blouse-item-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.35;
+  }
+  .blouse-mobile-card-inner .blouse-item-fabric {
+    font-size: 0.74rem;
+    margin-bottom: 0.65rem;
+  }
+  .blouse-mobile-card-inner .current-price {
+    font-size: 0.92rem;
+  }
+  .blouse-mobile-card-inner .was-price {
+    font-size: 0.72rem;
+  }
+  .blouse-mobile-card-inner .blouse-quick-book-btn {
+    font-size: 0.72rem;
+    padding: 0.35rem 0.85rem;
+  }
+  .blouse-nav-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 42%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #580c29;
+    border: 1.5px solid rgba(198, 146, 62, 0.4);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    z-index: 10;
+    cursor: pointer;
+  }
+  .blouse-nav-prev {
+    left: 0;
+  }
+  .blouse-nav-next {
+    right: 0;
   }
   .blouse-tailoring-strip {
     flex-direction: column;
@@ -1892,49 +2165,6 @@ html {
   }
   .tailoring-strip-icon {
     margin: 0 auto;
-  }
-}
-
-@media (max-width: 540px) {
-  .blouse-section {
-    padding: 3.5rem 1rem 4rem;
-  }
-  .blouse-title {
-    font-size: 1.45rem;
-  }
-  .blouse-subtitle {
-    font-size: 0.82rem;
-  }
-  .blouse-filter-btn {
-    font-size: 0.7rem;
-    padding: 0.38rem 0.85rem;
-  }
-  .blouse-spotlight-info {
-    padding: 1.1rem;
-  }
-  .blouse-spotlight-title {
-    font-size: 1.15rem;
-  }
-  .blouse-cards-grid,
-  .blouse-cards-grid.full-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.65rem;
-  }
-  .blouse-card-info {
-    padding: 0.75rem 0.5rem;
-  }
-  .blouse-item-name {
-    font-size: 0.78rem;
-  }
-  .blouse-item-fabric {
-    font-size: 0.68rem;
-  }
-  .current-price {
-    font-size: 0.82rem;
-  }
-  .blouse-quick-book-btn {
-    font-size: 0.62rem;
-    padding: 0.25rem 0.5rem;
   }
 }
 
@@ -2076,7 +2306,8 @@ html {
   flex: 0 0 380px;
   min-width: 380px;
   max-width: 380px;
-  height: 330px;
+  min-height: 330px;
+  height: auto;
   scroll-snap-align: start;
   background: #ffffff;
   border: 1.5px solid #d4a359;
@@ -2276,7 +2507,7 @@ html {
 }
 
 /* Responsive Breakpoints */
-@media (max-width: 1024px) {
+@media (min-width: 769px) and (max-width: 1024px) {
   .reviews-section {
     padding: 4.5rem 1.5rem 5rem;
   }
@@ -2287,7 +2518,8 @@ html {
     flex: 0 0 340px;
     min-width: 340px;
     max-width: 340px;
-    height: 330px;
+    min-height: 330px;
+    height: auto;
     padding: 1.5rem 1.4rem 1.25rem;
   }
   .reviews-title {
@@ -2298,67 +2530,123 @@ html {
   }
 }
 
+/* Mobile Screens (<= 768px): Single card scrolling effect with full box visible and no cutting edges */
 @media (max-width: 768px) {
-  .reviews-slider-wrap {
-    padding: 0 2.25rem;
-  }
-  .reviews-nav-btn {
-    width: 36px;
-    height: 36px;
-  }
-  .reviews-nav-btn svg {
-    width: 18px;
-    height: 18px;
-  }
-  .review-card {
-    flex: 0 0 300px;
-    min-width: 300px;
-    max-width: 300px;
-    height: 330px;
-  }
-}
-
-@media (max-width: 520px) {
   .reviews-section {
     padding: 3.5rem 0.75rem 4rem;
   }
-  .reviews-slider-wrap {
-    padding: 0 1.85rem;
-  }
   .reviews-header {
     margin-bottom: 2rem;
+    padding: 0 0.5rem;
   }
   .reviews-title {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
+    line-height: 1.35;
   }
   .reviews-tagline {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
+  }
+  .reviews-rating-pill {
+    padding: 0.4rem 1rem;
+    gap: 0.45rem;
+  }
+  .reviews-rating-pill .stars {
+    font-size: 0.95rem;
+  }
+  .reviews-rating-pill .rating-score {
+    font-size: 0.85rem;
+  }
+  .reviews-rating-pill .verified-text {
+    font-size: 0.74rem;
+  }
+  .reviews-slider-wrap {
+    position: relative;
+    width: 100%;
+    padding: 0 2rem;
+    box-sizing: border-box;
+  }
+  .reviews-slider-track {
+    display: flex !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    gap: 0;
+    padding: 0.5rem 0 1.25rem;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .reviews-slider-track::-webkit-scrollbar {
+    display: none;
   }
   .review-card {
-    flex: 0 0 280px;
-    min-width: 280px;
-    max-width: 280px;
-    height: 340px;
-    padding: 1.35rem 1.2rem 1.15rem;
+    flex: 0 0 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: auto;
+    min-height: 290px;
+    box-sizing: border-box;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    padding: 1.4rem 1.25rem 1.2rem;
+    margin: 0;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(43, 12, 30, 0.08);
+  }
+  .review-card-top {
+    margin-bottom: 0.6rem;
+  }
+  .review-stars {
+    font-size: 1.05rem;
+  }
+  .review-card-tag {
+    font-size: 0.62rem;
+    padding: 0.18rem 0.5rem;
+  }
+  .review-quote-icon {
+    font-size: 2.3rem;
   }
   .review-text {
     font-size: 0.88rem;
+    line-height: 1.55;
+  }
+  .reviewer-profile {
+    padding-top: 0.75rem;
+    gap: 0.75rem;
   }
   .reviewer-avatar {
-    width: 40px;
-    height: 40px;
-    font-size: 0.9rem;
+    width: 42px;
+    height: 42px;
+    font-size: 0.95rem;
   }
   .reviewer-name {
-    font-size: 1rem;
+    font-size: 1.02rem;
+  }
+  .reviewer-status {
+    font-size: 0.74rem;
   }
   .reviews-nav-btn {
-    width: 32px;
-    height: 32px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #580c29;
+    border: 1.5px solid rgba(198, 146, 62, 0.4);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    z-index: 10;
+    cursor: pointer;
   }
-  .reviews-nav-btn svg {
-    width: 16px;
-    height: 16px;
+  .reviews-nav-prev {
+    left: 0;
+  }
+  .reviews-nav-next {
+    right: 0;
   }
 }
 
