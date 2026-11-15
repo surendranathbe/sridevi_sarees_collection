@@ -175,6 +175,13 @@ const customerReviews = [
   }
 ];
 
+// Extended reviews array for seamless infinite sliding with symmetrical peeking
+const extendedReviews = [
+  ...customerReviews.map((r, i) => ({ ...r, virtualKey: `set1-${i}` })),
+  ...customerReviews.map((r, i) => ({ ...r, virtualKey: `set2-${i}` })),
+  ...customerReviews.map((r, i) => ({ ...r, virtualKey: `set3-${i}` }))
+];
+
 const ourCollections = [
   {
     id: 'navy-blue-silver-zari',
@@ -400,8 +407,6 @@ function App() {
   const isCollectionsPaused = useRef(false);
   const blouseScrollRef = useRef(null);
   const isBlousePaused = useRef(false);
-  const reviewsScrollRef = useRef(null);
-  const isReviewsPaused = useRef(false);
   const activeDrape = featuredDrapes.find((d) => d.id === selectedDrapeId) || featuredDrapes[0];
 
   useEffect(() => {
@@ -634,7 +639,102 @@ function App() {
     }
   };
 
+  // Customer Reviews Centered Focus Carousel (Symmetrical Peeking, Focus Highlighting, Infinite Seamless Slide)
+  const totalReviews = customerReviews.length; // 6
+  const [slideIndex, setSlideIndex] = useState(6);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= 1059;
+    }
+    return false;
+  });
+  const isReviewPaused = useRef(false);
+  const reviewTouchStartX = useRef(0);
+  const reviewTouchEndX = useRef(0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window === 'undefined') return;
+      setIsMobileOrTablet(window.innerWidth <= 1059);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleReviewPrev = () => {
+    setIsTransitioning(true);
+    setSlideIndex((prev) => prev - 1);
+  };
+
+  const handleReviewNext = () => {
+    setIsTransitioning(true);
+    setSlideIndex((prev) => prev + 1);
+  };
+
+  const handleDotClick = (targetDot) => {
+    setIsTransitioning(true);
+    setSlideIndex(6 + targetDot);
+  };
+
+  const handleSlideTransitionEnd = () => {
+    if (slideIndex < 6) {
+      setIsTransitioning(false);
+      setSlideIndex((prev) => prev + totalReviews);
+    } else if (slideIndex >= 12) {
+      setIsTransitioning(false);
+      setSlideIndex((prev) => prev - totalReviews);
+    }
+  };
+
+  useEffect(() => {
+    if (!isTransitioning) {
+      const raf = requestAnimationFrame(() => {
+        setIsTransitioning(true);
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [isTransitioning]);
+
+  const activeDot = ((slideIndex - 6) % totalReviews + totalReviews) % totalReviews;
+
+  const handleReviewTouchStart = (e) => {
+    isReviewPaused.current = true;
+    reviewTouchStartX.current = e.touches[0].clientX;
+    reviewTouchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleReviewTouchMove = (e) => {
+    reviewTouchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleReviewTouchEnd = () => {
+    isReviewPaused.current = false;
+    const diff = reviewTouchStartX.current - reviewTouchEndX.current;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        handleReviewNext();
+      } else {
+        handleReviewPrev();
+      }
+    }
+    reviewTouchStartX.current = 0;
+    reviewTouchEndX.current = 0;
+  };
+
   const isPageScrolling = useRef(false);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (isReviewPaused.current || isPageScrolling.current) return;
+      setIsTransitioning(true);
+      setSlideIndex((prev) => prev + 1);
+    }, 4500);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     let scrollTimeout;
@@ -749,64 +849,6 @@ function App() {
         container.scrollBy({ left: scrollDelta, behavior: 'smooth' });
       }
     }, 3400);
-
-    return () => {
-      clearInterval(intervalId);
-      if (observer) observer.disconnect();
-    };
-  }, []);
-
-  const handleReviewsScroll = (direction) => {
-    if (!reviewsScrollRef.current) return;
-    const container = reviewsScrollRef.current;
-    const firstCard = container.querySelector('.review-card');
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-    const scrollDelta = isMobile ? container.clientWidth : (firstCard ? firstCard.offsetWidth + 24 : 380);
-    const maxScroll = container.scrollWidth - container.clientWidth;
-
-    if (direction === 'next') {
-      if (container.scrollLeft >= maxScroll - 15) {
-        container.scrollTo({ left: 0, behavior: 'smooth' });
-      } else {
-        container.scrollBy({ left: scrollDelta, behavior: 'smooth' });
-      }
-    } else {
-      if (container.scrollLeft <= 15) {
-        container.scrollTo({ left: maxScroll, behavior: 'smooth' });
-      } else {
-        container.scrollBy({ left: -scrollDelta, behavior: 'smooth' });
-      }
-    }
-  };
-
-  // Automatic right-to-left sliding animation for customer reviews (pauses when user scrolls page)
-  useEffect(() => {
-    const container = reviewsScrollRef.current;
-    if (!container) return;
-
-    let isVisible = true;
-    let observer;
-    if (typeof IntersectionObserver !== 'undefined') {
-      observer = new IntersectionObserver(([entry]) => {
-        isVisible = entry.isIntersecting;
-      }, { threshold: 0.1 });
-      observer.observe(container);
-    }
-
-    const intervalId = setInterval(() => {
-      if (isReviewsPaused.current || isPageScrolling.current || !isVisible) return;
-
-      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-      const firstCard = container.querySelector('.review-card');
-      const scrollDelta = isMobile ? container.clientWidth : (firstCard ? firstCard.offsetWidth + 24 : 380);
-      const maxScroll = container.scrollWidth - container.clientWidth;
-
-      if (container.scrollLeft >= maxScroll - 15) {
-        container.scrollTo({ left: 0, behavior: 'smooth' });
-      } else {
-        container.scrollBy({ left: scrollDelta, behavior: 'smooth' });
-      }
-    }, 3600);
 
     return () => {
       clearInterval(intervalId);
@@ -1596,19 +1638,17 @@ function App() {
               </div>
             </div>
 
-            {/* Single Row Sliding Track with Controls */}
+            {/* Centered Focus Reviews Carousel (Symmetrical Peeking, Focus Highlighting, Infinite Seamless Slide) */}
             <div
-              className="reviews-slider-wrap"
-              onMouseEnter={() => { isReviewsPaused.current = true; }}
-              onMouseLeave={() => { isReviewsPaused.current = false; }}
-              onTouchStart={() => { isReviewsPaused.current = true; }}
-              onTouchEnd={() => { isReviewsPaused.current = false; }}
+              className="reviews-carousel-wrapper"
+              onMouseEnter={() => { isReviewPaused.current = true; }}
+              onMouseLeave={() => { isReviewPaused.current = false; }}
             >
-              {/* Prev Navigation Button */}
+              {/* Previous Slide Floating Button */}
               <button
                 type="button"
-                className="reviews-nav-btn reviews-nav-prev"
-                onClick={() => handleReviewsScroll('prev')}
+                className="reviews-carousel-btn reviews-carousel-prev"
+                onClick={handleReviewPrev}
                 aria-label="Previous review"
               >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1616,55 +1656,108 @@ function App() {
                 </svg>
               </button>
 
-              {/* Single Row Sliding Track */}
-              <div className="reviews-slider-track" ref={reviewsScrollRef}>
-                {customerReviews.map((rev) => (
-                  <article key={rev.id} className="review-card">
-                    <div className="review-card-top">
-                      <div className="review-stars-wrap">
-                        <div className="review-stars" aria-label="5 out of 5 stars">
-                          {'★'.repeat(rev.rating)}
-                        </div>
-                        <span className="review-card-tag">{rev.tag}</span>
-                      </div>
-                      <div className="review-quote-icon" aria-hidden="true">
-                        “
-                      </div>
-                    </div>
+              {/* Viewport with touch support */}
+              <div
+                className="reviews-carousel-viewport"
+                onTouchStart={handleReviewTouchStart}
+                onTouchMove={handleReviewTouchMove}
+                onTouchEnd={handleReviewTouchEnd}
+              >
+                {/* Centered Sliding Track */}
+                <div
+                  className="reviews-carousel-track"
+                  onTransitionEnd={handleSlideTransitionEnd}
+                  style={{
+                    transform: `translateX(calc(-1 * (${slideIndex} * (var(--card-width) + var(--card-gap)) + var(--focus-offset))))`,
+                    transition: isTransitioning ? 'transform 0.46s cubic-bezier(0.22, 1, 0.36, 1)' : 'none'
+                  }}
+                >
+                  {extendedReviews.map((rev, idx) => {
+                    const isFocus = isMobileOrTablet
+                      ? idx === slideIndex
+                      : idx === slideIndex || idx === slideIndex + 1;
+                    const isLeft = idx < slideIndex;
+                    const isRight = isMobileOrTablet ? idx > slideIndex : idx > slideIndex + 1;
 
-                    <div className="review-text-wrap">
-                      <blockquote className="review-text">
-                        "{rev.text}"
-                      </blockquote>
-                    </div>
+                    const handleCardClick = () => {
+                      if (isLeft) {
+                        handleReviewPrev();
+                      } else if (isRight) {
+                        handleReviewNext();
+                      }
+                    };
 
-                    <div className="reviewer-profile">
-                      <div className="reviewer-avatar">
-                        <span>{rev.initials}</span>
-                      </div>
-                      <div className="reviewer-details">
-                        <h4 className="reviewer-name">{rev.name}</h4>
-                        <div className="reviewer-badge-row">
-                          <span className="verified-check">✓</span>
-                          <span className="reviewer-status">{rev.location}</span>
+                    return (
+                      <article
+                        key={rev.virtualKey}
+                        className={`review-card ${isFocus ? 'in-focus' : 'is-peeking'}`}
+                        onClick={handleCardClick}
+                        role={isFocus ? 'article' : 'button'}
+                        tabIndex={isFocus ? 0 : -1}
+                        aria-label={isFocus ? undefined : (isLeft ? 'Previous review' : 'Next review')}
+                      >
+                        <div className="review-card-top">
+                          <div className="review-stars-wrap">
+                            <div className="review-stars" aria-label="5 out of 5 stars">
+                              {'★'.repeat(rev.rating)}
+                            </div>
+                            <span className="review-card-tag">{rev.tag}</span>
+                          </div>
+                          <div className="review-quote-icon" aria-hidden="true">
+                            “
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </article>
-                ))}
+
+                        <div className="review-text-wrap">
+                          <blockquote className="review-text">
+                            "{rev.text}"
+                          </blockquote>
+                        </div>
+
+                        <div className="reviewer-profile">
+                          <div className="reviewer-avatar">
+                            <span>{rev.initials}</span>
+                          </div>
+                          <div className="reviewer-details">
+                            <h4 className="reviewer-name">{rev.name}</h4>
+                            <div className="reviewer-badge-row">
+                              <span className="verified-check">✓</span>
+                              <span className="reviewer-status">{rev.location}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Next Navigation Button */}
+              {/* Next Slide Floating Button */}
               <button
                 type="button"
-                className="reviews-nav-btn reviews-nav-next"
-                onClick={() => handleReviewsScroll('next')}
+                className="reviews-carousel-btn reviews-carousel-next"
+                onClick={handleReviewNext}
                 aria-label="Next review"
               >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </button>
+            </div>
+
+            {/* Pagination Indicator Dots */}
+            <div className="reviews-pagination" role="tablist" aria-label="Review slide pagination">
+              {customerReviews.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`review-dot ${activeDot === idx ? 'active' : ''}`}
+                  onClick={() => handleDotClick(idx)}
+                  aria-label={`Go to review ${idx + 1}`}
+                  role="tab"
+                  aria-selected={activeDot === idx}
+                />
+              ))}
             </div>
           </div>
         </section>

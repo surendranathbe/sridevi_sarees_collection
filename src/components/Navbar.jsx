@@ -224,13 +224,12 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
               {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
             </button>
 
-            {/* Profile Icon (Desktop Admin Console) */}
+            {/* Profile Icon */}
             <button
               type="button"
               className="nav-icon-btn profile-btn"
-              aria-label="Admin Management Portal"
-              title="Admin Console"
-              onClick={() => onNavigate('admin-login')}
+              aria-label="User Profile"
+              title="Profile"
             >
               <svg
                 className="nav-svg-icon"
@@ -278,13 +277,12 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </button>
 
-          {/* Profile / Admin Console Icon */}
+          {/* Profile Icon */}
           <button
             type="button"
             className="nav-icon-btn mobile-profile-btn"
-            aria-label="Admin Management Portal"
-            title="Admin Console"
-            onClick={() => onNavigate('admin-login')}
+            aria-label="User Profile"
+            title="Profile"
           >
             <svg
               className="nav-svg-icon"
@@ -398,10 +396,9 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
               <button
                 type="button"
                 className="mobile-action-card"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onNavigate('admin-login');
-                }}
+                title="User Profile"
+                aria-label="User Profile"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 <div className="mobile-card-icon-wrap">
                   <svg
@@ -416,7 +413,7 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                 </div>
-                <span>Admin Login</span>
+                <span>User Profile</span>
               </button>
             </div>
           </div>
