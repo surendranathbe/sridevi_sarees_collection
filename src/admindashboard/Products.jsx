@@ -5,7 +5,8 @@ import {
   EMPTY_PRODUCT_FORM,
   validateProductForm,
   formatIndianCurrency,
-  SAREE_CATEGORIES
+  SAREE_CATEGORIES,
+  generateNextCategoryProductId
 } from '../data/products';
 import { apiFetch, uploadImageFile } from '../utils/api';
 
@@ -31,9 +32,10 @@ const Products = ({
   const [formData, setFormData] = useState(EMPTY_PRODUCT_FORM);
   const [formErrors, setFormErrors] = useState({});
 
-  // File input refs for uploading from system
+  // File input refs for uploading from system & modal scroll ref
   const firstImageFileRef = useRef(null);
   const hoverImageFileRef = useRef(null);
+  const modalFormRef = useRef(null);
 
   // Open modal in Add mode
   const handleOpenAdd = () => {
@@ -71,9 +73,41 @@ const Products = ({
     if (hoverImageFileRef.current) hoverImageFileRef.current.value = '';
   };
 
-  // Handle standard text / textarea / number inputs
+  // Handle standard text / textarea / number inputs & auto-generate Product ID on category change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === 'category') {
+      const localNextId = value ? generateNextCategoryProductId(value, productsList) : '';
+      const shouldAutoFillId = formMode === 'add' || !formData.productId;
+
+      setFormData((prev) => ({
+        ...prev,
+        category: value,
+        productId: shouldAutoFillId ? localNextId : prev.productId
+      }));
+      setFormErrors((prev) => ({
+        ...prev,
+        category: undefined,
+        ...(shouldAutoFillId ? { productId: undefined } : {})
+      }));
+
+      if (value && shouldAutoFillId) {
+        apiFetch(`/api/admin/products/next-id?category=${encodeURIComponent(value)}`, { method: 'GET' })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((result) => {
+            const serverNextId = result?.data?.nextProductId;
+            if (serverNextId) {
+              setFormData((prev) => (prev.category === value ? { ...prev, productId: serverNextId } : prev));
+            }
+          })
+          .catch(() => {
+            // Keep locally generated ID if offline/unreachable
+          });
+      }
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: undefined }));
@@ -122,6 +156,9 @@ const Products = ({
     const validation = validateProductForm(formData);
     if (!validation.isValid) {
       setFormErrors(validation.errors);
+      if (modalFormRef.current) {
+        modalFormRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
       return;
     }
 
@@ -138,9 +175,10 @@ const Products = ({
     setIsSubmitting(true);
     try {
       const isEdit = formMode === 'edit';
+      const catSlug = encodeURIComponent(formattedProduct.category);
       const endpoint = isEdit
-        ? `/api/admin/products/${encodeURIComponent(editingOriginalId)}`
-        : '/api/admin/products';
+        ? `/api/admin/products/category/${catSlug}/${encodeURIComponent(editingOriginalId)}`
+        : `/api/admin/products/category/${catSlug}`;
       const method = isEdit ? 'PUT' : 'POST';
 
       const response = await apiFetch(endpoint, {
@@ -154,7 +192,16 @@ const Products = ({
         if (result.errors && typeof result.errors === 'object') {
           setFormErrors(result.errors);
         } else {
-          setFormErrors({ general: result.message || 'Failed to save product.' });
+          setFormErrors({
+            general:
+              result.message ||
+              (response.status === 404
+                ? 'Backend endpoint not found (HTTP 404). Please restart your local Spring Boot server so it loads the latest backend changes.'
+                : `Failed to save product (HTTP ${response.status}).`)
+          });
+        }
+        if (modalFormRef.current) {
+          modalFormRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         }
         return;
       }
@@ -194,14 +241,17 @@ const Products = ({
   };
 
   // Delete product with confirmation via backend API
-  const handleDeleteProduct = async (productId, productName) => {
+  const handleDeleteProduct = async (productId, productName, category = '') => {
     const isConfirmed = window.confirm(
       `Are you sure you want to delete "${productName}" (ID: ${productId}) from the catalog?`
     );
     if (!isConfirmed) return;
 
     try {
-      const response = await apiFetch(`/api/admin/products/${encodeURIComponent(productId)}`, {
+      const deleteUrl = category
+        ? `/api/admin/products/category/${encodeURIComponent(category)}/${encodeURIComponent(productId)}`
+        : `/api/admin/products/${encodeURIComponent(productId)}`;
+      const response = await apiFetch(deleteUrl, {
         method: 'DELETE'
       });
       const result = await response.json().catch(() => ({}));
@@ -407,7 +457,7 @@ const Products = ({
                         <button
                           type="button"
                           className="admin-product-delete-btn"
-                          onClick={() => handleDeleteProduct(product.productId, product.name)}
+                          onClick={() => handleDeleteProduct(product.productId, product.name, product.category)}
                           aria-label={`Delete ${product.name}`}
                         >
                           Delete
@@ -505,7 +555,7 @@ const Products = ({
                   <button
                     type="button"
                     className="admin-product-delete-btn"
-                    onClick={() => handleDeleteProduct(product.productId, product.name)}
+                    onClick={() => handleDeleteProduct(product.productId, product.name, product.category)}
                     aria-label={`Delete ${product.name}`}
                   >
                     Delete
@@ -544,17 +594,47 @@ const Products = ({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="admin-modal-form" noValidate>
+            <form ref={modalFormRef} onSubmit={handleSubmit} className="admin-modal-form" noValidate>
               {formErrors.general && (
                 <div className="admin-form-error-banner" style={{ padding: '0.65rem', marginBottom: '0.9rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#b91c1c', fontSize: '0.85rem' }}>
                   {formErrors.general}
                 </div>
               )}
-              {/* Field 1: Product ID */}
+              {/* Field 1: Saree Category (auto-generates Product ID on selection) */}
+              <div className="admin-form-group">
+                <label htmlFor="modal-product-category" className="admin-form-label">
+                  <span>
+                    Saree Category <span className="admin-form-label-required">*</span>
+                  </span>
+                </label>
+                <select
+                  id="modal-product-category"
+                  name="category"
+                  className={`admin-form-input admin-form-select ${formErrors.category ? 'input-error' : ''}`}
+                  value={formData.category || ''}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">Select Saree Category</option>
+                  {PRODUCT_SAREE_CATEGORIES.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name} ({cat.telugu})
+                    </option>
+                  ))}
+                </select>
+                {formErrors.category && (
+                  <span className="admin-form-error-msg">{formErrors.category}</span>
+                )}
+              </div>
+
+              {/* Field 2: Product ID (Auto-generated from Saree Category, e.g. dola-01) */}
               <div className="admin-form-group">
                 <label htmlFor="modal-product-id" className="admin-form-label">
                   <span>
                     Product ID <span className="admin-form-label-required">*</span>
+                  </span>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--admin-text-subtle)' }}>
+                    Auto-generated from category
                   </span>
                 </label>
                 <input
@@ -562,7 +642,7 @@ const Products = ({
                   name="productId"
                   type="text"
                   className={`admin-form-input ${formErrors.productId ? 'input-error' : ''}`}
-                  placeholder="e.g. SR-KAN-001"
+                  placeholder="Select category to auto-generate (e.g. dola-01)"
                   value={formData.productId}
                   onChange={handleInputChange}
                   required
@@ -572,7 +652,7 @@ const Products = ({
                 )}
               </div>
 
-              {/* Field 2: Name of the Product */}
+              {/* Field 3: Name of the Product */}
               <div className="admin-form-group">
                 <label htmlFor="modal-product-name" className="admin-form-label">
                   <span>
@@ -584,7 +664,7 @@ const Products = ({
                   name="name"
                   type="text"
                   className={`admin-form-input ${formErrors.name ? 'input-error' : ''}`}
-                  placeholder="e.g. Pure Kanchipuram Gold Zari Silk Saree"
+                  placeholder="e.g. Pure Royal Dola Zari Silk Saree"
                   value={formData.name}
                   onChange={handleInputChange}
                   required
@@ -592,29 +672,6 @@ const Products = ({
                 {formErrors.name && (
                   <span className="admin-form-error-msg">{formErrors.name}</span>
                 )}
-              </div>
-
-              {/* Field: Saree Category (from our-collections.jsx) */}
-              <div className="admin-form-group">
-                <label htmlFor="modal-product-category" className="admin-form-label">
-                  <span>
-                    Saree Category
-                  </span>
-                </label>
-                <select
-                  id="modal-product-category"
-                  name="category"
-                  className="admin-form-input admin-form-select"
-                  value={formData.category || ''}
-                  onChange={handleInputChange}
-                >
-                  <option value="">Select Saree Category</option>
-                  {PRODUCT_SAREE_CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name} ({cat.telugu})
-                    </option>
-                  ))}
-                </select>
               </div>
 
               {/* Field 3: Description */}
@@ -788,6 +845,12 @@ const Products = ({
                   <span className="admin-form-error-msg">{formErrors.cost}</span>
                 )}
               </div>
+
+              {formErrors.general && (
+                <div className="admin-form-error-banner" style={{ padding: '0.65rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#b91c1c', fontSize: '0.85rem' }}>
+                  {formErrors.general}
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="admin-modal-footer">

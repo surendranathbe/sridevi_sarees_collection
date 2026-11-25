@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './components.css';
 
 // Reusing existing project assets
 import heroBannerImg from '../assets/pattu-saree-banner1.jpg';

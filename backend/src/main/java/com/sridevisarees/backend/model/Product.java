@@ -16,6 +16,10 @@ public class Product {
     private String productId;
 
     private String name;
+
+    @Indexed
+    private String category;
+
     private String description;
     private String firstImageUrl;
     private String hoverImageUrl;
@@ -29,9 +33,14 @@ public class Product {
     }
 
     public Product(String productId, String name, String description, String firstImageUrl, String hoverImageUrl, Double cost) {
+        this(productId, name, "", description, firstImageUrl, hoverImageUrl, cost);
+    }
+
+    public Product(String productId, String name, String category, String description, String firstImageUrl, String hoverImageUrl, Double cost) {
         this();
         this.productId = productId;
         this.name = name;
+        this.category = category;
         this.description = description;
         this.firstImageUrl = firstImageUrl;
         this.hoverImageUrl = hoverImageUrl;
@@ -60,6 +69,14 @@ public class Product {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getDescription() {

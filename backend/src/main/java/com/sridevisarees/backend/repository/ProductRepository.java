@@ -13,5 +13,6 @@ public interface ProductRepository extends MongoRepository<Product, String> {
     boolean existsByProductId(String productId);
     void deleteByProductId(String productId);
     List<Product> findAllByOrderByCreatedAtDesc();
+    List<Product> findByCategoryIgnoreCaseOrderByCreatedAtDesc(String category);
 }
 

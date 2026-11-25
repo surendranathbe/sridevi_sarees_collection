@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import './components.css';
 import { getPublishedBanner, BANNER_UPDATE_EVENT, fetchPublishedBanner, resolveBannerImageUrl } from '../data/bannerContent';
 
 import silkBannerImg from '../assets/silk-sarees-banner1.jpg';

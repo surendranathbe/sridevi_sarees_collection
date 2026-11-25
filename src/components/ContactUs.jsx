@@ -6,7 +6,6 @@ import {
   generateGeneralWhatsAppMessage,
   OWNER_EMAIL
 } from '../data/contactMailData';
-import './components.css';
 
 const ContactUs = ({ onNavigate = () => {} }) => {
   const [formState, setFormState] = useState({

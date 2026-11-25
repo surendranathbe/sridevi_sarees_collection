@@ -17,18 +17,47 @@ export const DEFAULT_GRID_VIEW = '4x4';
  * Authentic Saree Categories matching our-collections.jsx
  */
 export const SAREE_CATEGORIES = [
-  { id: 'all', name: 'All Sarees', telugu: 'అన్ని చీరలు', tag: 'All Weaves' },
-  { id: 'royal-dola-silk', name: 'Royal Dola Silk', telugu: 'రాయల్ డోలా సిల్క్', tag: 'Festive Classic' },
-  { id: 'banarasi-silk', name: 'Banarasi Silk', telugu: 'బనారసి సిల్క్', tag: 'Zari Brocade' },
-  { id: 'uppada-silk', name: 'Uppada Silk', telugu: 'ఉప్పాడ పట్టు', tag: 'Jamdani Pure' },
-  { id: 'mangalagiri-pattu', name: 'Mangalagiri Pattu', telugu: 'మంగళగిరి పట్టు', tag: 'Nizam Border' },
-  { id: 'pure-handloom', name: 'Pure Handloom Sarees', telugu: 'చేనేత చీరలు', tag: 'Artisan Pride' },
-  { id: 'designer-silk', name: 'Designer Silk Sarees', telugu: 'డిజైనర్ సిల్క్', tag: 'Party Drapes' },
-  { id: 'organza-tissue', name: 'Organza & Tissue Sarees', telugu: 'ఆర్గాన్జా సిల్క్', tag: 'Sheer Glow' },
-  { id: 'chanderi-maheshwari', name: 'Chanderi & Maheshwari', telugu: 'మహేశ్వరి సిల్క్', tag: 'Royal Weave' },
-  { id: 'chiffon-georgette', name: 'Chiffon & Georgette', telugu: 'షిఫాన్ & జార్జెట్', tag: 'Lightweight' },
-  { id: 'pure-cotton', name: 'Pure Cotton Sarees', telugu: 'ప్యూర్ కాటన్', tag: 'Daily Comfort' }
+  { id: 'all', name: 'All Sarees', telugu: 'అన్ని చీరలు', tag: 'All Weaves', prefix: 'saree' },
+  { id: 'royal-dola-silk', name: 'Royal Dola Silk', telugu: 'రాయల్ డోలా సిల్క్', tag: 'Festive Classic', prefix: 'dola' },
+  { id: 'banarasi-silk', name: 'Banarasi Silk', telugu: 'బనారసి సిల్క్', tag: 'Zari Brocade', prefix: 'banarasi' },
+  { id: 'uppada-silk', name: 'Uppada Silk', telugu: 'ఉప్పాడ పట్టు', tag: 'Jamdani Pure', prefix: 'uppada' },
+  { id: 'mangalagiri-pattu', name: 'Mangalagiri Pattu', telugu: 'మంగళగిరి పట్టు', tag: 'Nizam Border', prefix: 'mangalagiri' },
+  { id: 'pure-handloom', name: 'Pure Handloom Sarees', telugu: 'చేనేత చీరలు', tag: 'Artisan Pride', prefix: 'handloom' },
+  { id: 'designer-silk', name: 'Designer Silk Sarees', telugu: 'డిజైనర్ సిల్క్', tag: 'Party Drapes', prefix: 'designer' },
+  { id: 'organza-tissue', name: 'Organza & Tissue Sarees', telugu: 'ఆర్గాన్జా సిల్క్', tag: 'Sheer Glow', prefix: 'organza' },
+  { id: 'chanderi-maheshwari', name: 'Chanderi & Maheshwari', telugu: 'మహేశ్వరి సిల్క్', tag: 'Royal Weave', prefix: 'chanderi' },
+  { id: 'chiffon-georgette', name: 'Chiffon & Georgette', telugu: 'షిఫాన్ & జార్జెట్', tag: 'Lightweight', prefix: 'chiffon' },
+  { id: 'pure-cotton', name: 'Pure Cotton Sarees', telugu: 'ప్యూర్ కాటన్', tag: 'Daily Comfort', prefix: 'cotton' }
 ];
+
+/**
+ * Generates the next sequential Product ID for a category (e.g., "dola-01", "dola-02").
+ * @param {string} categoryId
+ * @param {Array<object>} existingProducts
+ * @returns {string}
+ */
+export function generateNextCategoryProductId(categoryId, existingProducts = []) {
+  const cat = SAREE_CATEGORIES.find((c) => c.id === categoryId && c.id !== 'all');
+  if (!cat || !cat.prefix) return '';
+
+  const prefix = cat.prefix;
+  const escaped = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`^${escaped}-(\\d+)$`, 'i');
+
+  let maxNum = 0;
+  for (const item of existingProducts || []) {
+    const pid = (item?.productId || '').trim();
+    const match = pid.match(pattern);
+    if (match) {
+      const n = parseInt(match[1], 10);
+      if (!Number.isNaN(n) && n > maxNum) {
+        maxNum = n;
+      }
+    }
+  }
+
+  return `${prefix}-${String(maxNum + 1).padStart(2, '0')}`;
+}
 
 // Blank initial form state for adding/editing products
 export const EMPTY_PRODUCT_FORM = {
@@ -55,6 +84,10 @@ export function validateProductForm(form) {
 
   if (!form.name || !form.name.trim()) {
     errors.name = 'Product name is required.';
+  }
+
+  if (!form.category || !form.category.trim()) {
+    errors.category = 'Please select a saree category.';
   }
 
   if (!form.firstImageUrl || !form.firstImageUrl.trim()) {

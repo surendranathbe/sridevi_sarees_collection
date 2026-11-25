@@ -1,5 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { SAREE_CATEGORIES } from '../data/products';
+import { apiFetch, getApiBaseUrl } from '../utils/api';
+import { addToCart, getCartItems, CART_UPDATE_EVENT } from '../utils/cart';
 import './our-collections.css';
 
 // Price presets for quick selection with neat Indian Rupee formatting
@@ -15,27 +17,84 @@ const PRICE_PRESETS = [
 const MIN_COST_BOUND = 450;
 const MAX_COST_BOUND = 6500;
 const COST_STEP = 50;
+const STORE_WHATSAPP_NUMBER = '919849837338';
+
+const buildWhatsAppProductUrl = (saree, categoryName, intent = 'enquiry') => {
+  const productId = (saree?.productId || 'N/A').trim();
+  const productName = (saree?.name || 'Saree').trim();
+  const priceText = `₹${Number(saree?.cost ?? saree?.price ?? 0).toLocaleString('en-IN')}`;
+  const detailsText = (saree?.description || 'Interested in knowing fabric weave, color availability, and delivery details.').trim();
+  const catLabel = categoryName || saree?.category || 'Saree Collection';
+
+  const header =
+    intent === 'buy'
+      ? '*Order Request — Sridevi Sarees & Collections*'
+      : '*Product Enquiry — Sridevi Sarees & Collections*';
+
+  const closing =
+    intent === 'buy'
+      ? 'I would like to purchase this saree. Please share payment & delivery details.'
+      : 'Could you please confirm availability and share more details about this saree?';
+
+  const message = [
+    'Namaskaram Sridevi Sarees & Collections! 🙏',
+    '',
+    header,
+    `• *Product ID:* ${productId}`,
+    `• *Product Name:* ${productName}`,
+    `• *Category:* ${catLabel}`,
+    `• *Price:* ${priceText}`,
+    `• *Product Details:* ${detailsText}`,
+    '',
+    closing
+  ].join('\n');
+
+  return `https://wa.me/${STORE_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+};
+
+const resolveProductImageUrl = (url) => {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+    return trimmed;
+  }
+  const baseUrl = getApiBaseUrl();
+  return `${baseUrl}${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
+};
 
 /**
  * OurCollections Component
  * Fixed neatly aligned sidebar layout with dedicated scrolling effect for options,
- * dynamic cost range filter from ₹450 to ₹6500 and above, and Indian Rupee symbols throughout.
+ * dynamic cost range filter from ₹450 to ₹6500 and above, Indian Rupee symbols,
+ * and dedicated category pages backed by MongoDB products.
  */
 const OurCollections = ({
-  sarees = [],
+  sarees = null,
+  initialCategory = 'all',
+  onCategoryRouteChange = () => {},
   onNavigate = () => {},
   onFilterChange = () => {}
 }) => {
+  const validInitialCategory = SAREE_CATEGORIES.some((c) => c.id === initialCategory)
+    ? initialCategory
+    : 'all';
+
+  // Fetched products from backend database
+  const [dbProducts, setDbProducts] = useState([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(sarees === null);
+  const [productsError, setProductsError] = useState('');
+
   // Applied filters state (Drives the active showcase, count badge, and main content)
   const [appliedFilters, setAppliedFilters] = useState({
-    category: 'all',
+    category: validInitialCategory,
     minCost: MIN_COST_BOUND,
     maxCost: MAX_COST_BOUND,
     isAbove6500: true
   });
 
   // Draft filter states (Controlled inside sidebar / mobile drawer until user clicks "Apply Filters")
-  const [draftCategory, setDraftCategory] = useState('all');
+  const [draftCategory, setDraftCategory] = useState(validInitialCategory);
   const [draftMinCost, setDraftMinCost] = useState(MIN_COST_BOUND);
   const [draftMaxCost, setDraftMaxCost] = useState(MAX_COST_BOUND);
   const [draftIsAbove6500, setDraftIsAbove6500] = useState(true);
@@ -48,6 +107,86 @@ const OurCollections = ({
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('featured');
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [cartProductIds, setCartProductIds] = useState(() => new Set(getCartItems().map((i) => i.productId)));
+  const [justAddedId, setJustAddedId] = useState('');
+
+  useEffect(() => {
+    const syncCartIds = () => {
+      setCartProductIds(new Set(getCartItems().map((i) => i.productId)));
+    };
+    window.addEventListener(CART_UPDATE_EVENT, syncCartIds);
+    window.addEventListener('storage', syncCartIds);
+    return () => {
+      window.removeEventListener(CART_UPDATE_EVENT, syncCartIds);
+      window.removeEventListener('storage', syncCartIds);
+    };
+  }, []);
+
+  const handleAddToCart = (saree, categoryName, resolvedPrimaryImg, resolvedHoverImg) => {
+    const pid = (saree.productId || saree.id || '').trim();
+    addToCart({
+      ...saree,
+      productId: pid,
+      categoryName: categoryName || saree.category || 'Saree Collection',
+      firstImageUrl: resolvedPrimaryImg || saree.firstImageUrl || '',
+      hoverImageUrl: resolvedHoverImg || saree.hoverImageUrl || ''
+    });
+    setJustAddedId(pid);
+    setTimeout(() => {
+      setJustAddedId((curr) => (curr === pid ? '' : curr));
+    }, 1600);
+  };
+
+  // Fetch live products from backend API
+  const loadProductsFromBackend = useCallback(async () => {
+    if (Array.isArray(sarees)) {
+      setIsLoadingProducts(false);
+      return;
+    }
+    setIsLoadingProducts(true);
+    setProductsError('');
+    try {
+      const response = await apiFetch('/api/products', { method: 'GET' });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Unable to load products.');
+      }
+      setDbProducts(Array.isArray(result.data) ? result.data : []);
+    } catch (err) {
+      setProductsError(err.message || 'Unable to connect to catalog service.');
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  }, [sarees]);
+
+  useEffect(() => {
+    if (Array.isArray(sarees)) return undefined;
+    let isCancelled = false;
+    apiFetch('/api/products', { method: 'GET' })
+      .then((res) => res.json().catch(() => ({})).then((result) => ({ ok: res.ok, result })))
+      .then(({ ok, result }) => {
+        if (isCancelled) return;
+        if (!ok || !result.success) {
+          throw new Error(result.message || 'Unable to load products.');
+        }
+        setDbProducts(Array.isArray(result.data) ? result.data : []);
+        setProductsError('');
+      })
+      .catch((err) => {
+        if (!isCancelled) {
+          setProductsError(err.message || 'Unable to connect to catalog service.');
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsLoadingProducts(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [sarees]);
 
   // Open mobile drawer and sync draft with currently applied filters
   const handleOpenMobileDrawer = () => {
@@ -161,6 +300,7 @@ const OurCollections = ({
     setDraftCategory(catId);
     if (typeof window !== 'undefined' && window.innerWidth >= 992) {
       setAppliedFilters((prev) => ({ ...prev, category: catId }));
+      onCategoryRouteChange(catId);
       notifyFilterChange(catId, draftMinCost, draftMaxCost, draftIsAbove6500);
     }
   };
@@ -269,6 +409,7 @@ const OurCollections = ({
       isAbove6500: draftIsAbove6500
     };
     setAppliedFilters(nextApplied);
+    onCategoryRouteChange(draftCategory);
     notifyFilterChange(draftCategory, finalMin, finalMax, draftIsAbove6500);
 
     // Close the filter drawer on mobile
@@ -309,6 +450,7 @@ const OurCollections = ({
       isAbove6500: true
     };
     setAppliedFilters(resetApplied);
+    onCategoryRouteChange('all');
     notifyFilterChange('all', MIN_COST_BOUND, MAX_COST_BOUND, true);
 
     if (typeof window !== 'undefined' && window.innerWidth < 992) {
@@ -320,6 +462,7 @@ const OurCollections = ({
   const handleRemoveCategoryPill = () => {
     setDraftCategory('all');
     setAppliedFilters((prev) => ({ ...prev, category: 'all' }));
+    onCategoryRouteChange('all');
     notifyFilterChange('all', appliedFilters.minCost, appliedFilters.maxCost, appliedFilters.isAbove6500);
   };
 
@@ -354,28 +497,50 @@ const OurCollections = ({
     appliedFilters.maxCost !== MAX_COST_BOUND ||
     !appliedFilters.isAbove6500;
 
-  // Real sarees filtering (when real product array is supplied)
+  // Update document title for dedicated category pages
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const prevTitle = document.title;
+    document.title =
+      activeCategoryObj.id === 'all'
+        ? 'Our Collections | Sridevi Sarees & Collections'
+        : `${activeCategoryObj.name} | Sridevi Sarees & Collections`;
+    return () => {
+      document.title = prevTitle;
+    };
+  }, [activeCategoryObj]);
+
+  // Real sarees filtering & sorting
+  const catalogSource = Array.isArray(sarees) ? sarees : dbProducts;
+
   const filteredSarees = useMemo(() => {
-    if (!sarees || sarees.length === 0) return [];
-    return sarees.filter((saree) => {
-      if (
-        appliedFilters.category !== 'all' &&
-        saree.category !== appliedFilters.category &&
-        saree.categoryId !== appliedFilters.category
-      ) {
+    if (!catalogSource || catalogSource.length === 0) return [];
+    const filtered = catalogSource.filter((saree) => {
+      const sareeCat = (saree.category || saree.categoryId || '').toLowerCase();
+      if (appliedFilters.category !== 'all' && sareeCat !== appliedFilters.category) {
         return false;
       }
-      const priceNum = Number(saree.cost || saree.price || 0);
+      const priceNum = Number(saree.cost ?? saree.price ?? 0);
       if (priceNum < appliedFilters.minCost) return false;
       if (!appliedFilters.isAbove6500 && priceNum > appliedFilters.maxCost) return false;
       return true;
     });
-  }, [sarees, appliedFilters]);
+
+    const sorted = [...filtered];
+    if (sortBy === 'price-low') {
+      sorted.sort((a, b) => Number(a.cost ?? a.price ?? 0) - Number(b.cost ?? b.price ?? 0));
+    } else if (sortBy === 'price-high') {
+      sorted.sort((a, b) => Number(b.cost ?? b.price ?? 0) - Number(a.cost ?? a.price ?? 0));
+    } else if (sortBy === 'newest') {
+      sorted.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    }
+    return sorted;
+  }, [catalogSource, appliedFilters, sortBy]);
 
   return (
     <div className="our-collections-page" id="our-collections-page">
       {/* =========================================================
-          PAGE SUB-BANNER / BREADCRUMB
+          PAGE SUB-BANNER / BREADCRUMB (PER-CATEGORY DEDICATED HEADER)
           ========================================================= */}
       <section className="col-hero-banner" aria-label="Our Collections Header">
         <div className="col-hero-pattern" aria-hidden="true" />
@@ -385,18 +550,32 @@ const OurCollections = ({
               Home
             </button>
             <span className="sep">/</span>
-            <span>Our Collections</span>
+            {activeCategoryObj.id === 'all' ? (
+              <span>Our Collections</span>
+            ) : (
+              <>
+                <button type="button" onClick={() => onCategoryRouteChange('all')}>
+                  Our Collections
+                </button>
+                <span className="sep">/</span>
+                <span>{activeCategoryObj.name}</span>
+              </>
+            )}
           </nav>
 
           <div className="col-hero-eyebrow">
             <span>✦</span>
-            <span>EXCLUSIVE WEAVES • మన కలెక్షన్స్</span>
+            <span>
+              {activeCategoryObj.id === 'all'
+                ? 'EXCLUSIVE WEAVES • మన కలెక్షన్స్'
+                : `${activeCategoryObj.tag.toUpperCase()} • ${activeCategoryObj.telugu}`}
+            </span>
             <span>✦</span>
           </div>
 
-          <h1 className="col-hero-title">OUR COLLECTIONS</h1>
-
-          
+          <h1 className="col-hero-title">
+            {activeCategoryObj.id === 'all' ? 'OUR COLLECTIONS' : activeCategoryObj.name.toUpperCase()}
+          </h1>
         </div>
       </section>
 
@@ -788,37 +967,137 @@ const OurCollections = ({
               </div>
             )}
 
-            {/* If actual sarees are provided via props, display them */}
-            {filteredSarees.length > 0 ? (
+            {/* Display loading / error / real products from database */}
+            {isLoadingProducts ? (
+              <div className="col-canvas-frame" aria-live="polite">
+                <div className="col-canvas-eyebrow">
+                  <span>✦</span>
+                  <span>LOADING COLLECTIONS</span>
+                  <span>✦</span>
+                </div>
+                <h3 className="col-canvas-title">Fetching {activeCategoryObj.name}...</h3>
+                <p className="col-canvas-desc">
+                  Please wait while we load the latest sarees from our showroom catalog.
+                </p>
+              </div>
+            ) : productsError ? (
+              <div className="col-canvas-frame" role="alert">
+                <h3 className="col-canvas-title">Unable to Load Sarees</h3>
+                <p className="col-canvas-desc">{productsError}</p>
+                <button
+                  type="button"
+                  className="col-apply-btn"
+                  style={{ maxWidth: '180px', margin: '0 auto' }}
+                  onClick={loadProductsFromBackend}
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : filteredSarees.length > 0 ? (
               <div className="col-sarees-grid">
-                {filteredSarees.map((saree) => (
-                  <article key={saree.id || saree.productId} className="col-saree-card">
-                    {saree.firstImageUrl && (
-                      <img
-                        src={saree.firstImageUrl}
-                        alt={saree.name}
-                        loading="lazy"
-                        decoding="async"
-                        style={{ width: '100%', height: '260px', objectFit: 'cover' }}
-                      />
-                    )}
-                    <div style={{ padding: '1rem' }}>
-                      <h4 style={{ margin: '0 0 0.5rem', color: 'var(--col-maroon)' }}>{saree.name}</h4>
-                      <p style={{ margin: 0, fontWeight: 700, color: 'var(--col-gold)' }}>
-                        ₹{Number(saree.cost || saree.price).toLocaleString('en-IN')}
-                      </p>
-                    </div>
-                  </article>
-                ))}
+                {filteredSarees.map((saree) => {
+                  const primaryImg = resolveProductImageUrl(saree.firstImageUrl);
+                  const hoverImg = resolveProductImageUrl(saree.hoverImageUrl);
+                  const catObj = SAREE_CATEGORIES.find(
+                    (c) => c.id === (saree.category || saree.categoryId)
+                  );
+                  return (
+                    <article key={saree.id || saree.productId} className="col-saree-card">
+                      <div className="col-saree-img-wrap">
+                        {primaryImg && (
+                          <img
+                            src={primaryImg}
+                            alt={saree.name}
+                            loading="lazy"
+                            decoding="async"
+                            className="col-saree-img col-saree-img-primary"
+                          />
+                        )}
+                        {hoverImg && (
+                          <img
+                            src={hoverImg}
+                            alt={`${saree.name} alternate view`}
+                            loading="lazy"
+                            decoding="async"
+                            className="col-saree-img col-saree-img-hover"
+                          />
+                        )}
+                        {catObj && (
+                          <span className="col-saree-cat-pill">{catObj.name}</span>
+                        )}
+                        <button
+                          type="button"
+                          className={`col-saree-cart-icon-btn ${
+                            cartProductIds.has(saree.productId || saree.id) ? 'in-cart' : ''
+                          }`}
+                          onClick={() => handleAddToCart(saree, catObj?.name, primaryImg, hoverImg)}
+                          aria-label={`Add ${saree.name} to shopping bag`}
+                          title={
+                            justAddedId === (saree.productId || saree.id)
+                              ? 'Added to bag!'
+                              : 'Add to Cart'
+                          }
+                        >
+                          {justAddedId === (saree.productId || saree.id) ? (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          ) : (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                              <line x1="3" y1="6" x2="21" y2="6" />
+                              <path d="M16 10a4 4 0 0 1-8 0" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                      <div className="col-saree-body">
+                        {saree.productId && (
+                          <span className="col-saree-code">{saree.productId}</span>
+                        )}
+                        <h4 className="col-saree-title">{saree.name}</h4>
+                        {saree.description && (
+                          <p className="col-saree-desc">{saree.description}</p>
+                        )}
+                        <p className="col-saree-price">
+                          ₹{Number(saree.cost ?? saree.price ?? 0).toLocaleString('en-IN')}
+                        </p>
+
+                        <div className="col-saree-actions">
+                          <a
+                            href={buildWhatsAppProductUrl(saree, catObj?.name, 'buy')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="col-saree-btn col-saree-btn-buy"
+                            aria-label={`Buy ${saree.name} now`}
+                          >
+                            Buy Now
+                          </a>
+                          <a
+                            href={buildWhatsAppProductUrl(saree, catObj?.name, 'enquiry')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="col-saree-btn col-saree-btn-enquiry"
+                            aria-label={`Enquiry now for ${saree.name} on WhatsApp`}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                              <path d="M12.03 2C6.51 2 2.04 6.47 2.04 12c0 1.76.46 3.48 1.34 5L2 22l5.13-1.34A9.93 9.93 0 0 0 12.03 22C17.55 22 22 17.53 22 12S17.55 2 12.03 2zm5.82 14.12c-.25.7-1.44 1.33-2 1.42-.52.08-1.18.11-1.91-.12-.44-.14-1-.33-1.72-.64-3.02-1.3-4.99-4.34-5.14-4.54-.15-.2-1.23-1.64-1.23-3.13 0-1.49.78-2.22 1.06-2.52.28-.3.61-.38.81-.38h.58c.19 0 .44-.07.69.52.25.6.86 2.09.94 2.24.08.15.13.33.03.53-.1.2-.15.33-.3.5-.15.18-.32.4-.45.54-.15.15-.31.31-.13.61.18.3.78 1.29 1.68 2.09 1.16 1.03 2.13 1.35 2.43 1.5.3.15.48.13.66-.08.18-.2.76-.88.96-1.18.2-.3.4-.25.68-.15.28.1 1.77.83 2.07.98.3.15.5.23.58.35.08.13.08.73-.17 1.43z" />
+                            </svg>
+                            <span>Enquiry Now</span>
+                          </a>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             ) : (
               /*
                * =====================================================================
                * NOTE ADHERENCE: DONT DISPLAY ANY DUMMY SAREES CONTENT
-               * JUST CREATE THE NEAT SIDEBAR LAYOUT & PRESENT THE READY-STATE CANVAS
                * =====================================================================
                */
-              <div className="col-canvas-frame" aria-label="Saree Layout Ready Canvas">
+              <div className="col-canvas-frame" aria-label="No Sarees in Category">
                 <div className="col-canvas-icon-wrap" aria-hidden="true">
                   <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -827,44 +1106,27 @@ const OurCollections = ({
 
                 <div className="col-canvas-eyebrow">
                   <span>✦</span>
-                  <span>SIDEBAR &amp; DYNAMIC COST FILTER ACTIVE</span>
+                  <span>{activeCategoryObj.name.toUpperCase()}</span>
                   <span>✦</span>
                 </div>
 
-                <h3 className="col-canvas-title">Saree Layout Framework Ready</h3>
+                <h3 className="col-canvas-title">No Sarees Found in {activeCategoryObj.name}</h3>
 
                 <p className="col-canvas-desc">
-                  The fixed left sidebar is neatly aligned with smooth scrolling for all saree categories
-                  and the dynamic price slider in Indian Rupees (₹450 to ₹6,500 and above).
+                  No sarees currently match your selected category and price range (₹{appliedFilters.minCost.toLocaleString('en-IN')} – ₹{appliedFilters.maxCost.toLocaleString('en-IN')}
+                  {appliedFilters.isAbove6500 && appliedFilters.maxCost >= MAX_COST_BOUND ? '+' : ''}).
                 </p>
 
-                {/* Filter Specs Pill Box */}
-                <div className="col-canvas-specs">
-                  <div className="col-spec-item">
-                    <span className="col-spec-lbl">Selected Category:</span>
-                    <span className="col-spec-val">{activeCategoryObj.name}</span>
-                  </div>
-                  <span className="col-spec-sep">✦</span>
-                  <div className="col-spec-item">
-                    <span className="col-spec-lbl">Cost Range:</span>
-                    <span className="col-spec-val">
-                      ₹{appliedFilters.minCost.toLocaleString('en-IN')} – ₹{appliedFilters.maxCost.toLocaleString('en-IN')}
-                      {appliedFilters.isAbove6500 && appliedFilters.maxCost >= MAX_COST_BOUND ? '+' : ''}
-                    </span>
-                  </div>
-                  <span className="col-spec-sep">✦</span>
-                  <div className="col-spec-item">
-                    <span className="col-spec-lbl">Dummy Sarees:</span>
-                    <span className="col-spec-val">None (Hidden as requested)</span>
-                  </div>
-                </div>
-
-                {/* Developer / Storefront Integration Notice */}
-                <div className="col-canvas-note-box">
-                  <strong>Layout Integration Status:</strong> When real saree products are supplied
-                  or loaded from the backend catalog, they will automatically filter and render in
-                  this grid based on the selected category and dynamic cost range.
-                </div>
+                {isFilterActive && (
+                  <button
+                    type="button"
+                    className="col-apply-btn"
+                    style={{ maxWidth: '200px', margin: '0.5rem auto 0' }}
+                    onClick={handleResetFilters}
+                  >
+                    View All Sarees
+                  </button>
+                )}
               </div>
             )}
           </main>

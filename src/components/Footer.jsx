@@ -1,6 +1,5 @@
 import React from 'react';
 import logoImg from '../assets/logo_2.png';
-import './components.css';
 
 const Footer = ({ onNavigate = () => {} }) => {
   const navLinks = [

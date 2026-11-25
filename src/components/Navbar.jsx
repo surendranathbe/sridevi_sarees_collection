@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import logoImg from '../assets/logo_2.png';
-import './components.css';
+import { getCartTotalCount, openCartDrawer, CART_UPDATE_EVENT } from '../utils/cart';
 
 const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedNav, setSelectedNav] = useState('Home');
-  const [cartCount, setCartCount] = useState(2);
+  const [cartCount, setCartCount] = useState(() => getCartTotalCount());
+
+  useEffect(() => {
+    const syncCount = () => setCartCount(getCartTotalCount());
+    window.addEventListener(CART_UPDATE_EVENT, syncCount);
+    window.addEventListener('storage', syncCount);
+    return () => {
+      window.removeEventListener(CART_UPDATE_EVENT, syncCount);
+      window.removeEventListener('storage', syncCount);
+    };
+  }, []);
 
   const activeItem =
     currentView === 'about'
@@ -203,8 +213,8 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
               type="button"
               className="nav-icon-btn cart-btn"
               aria-label={`Shopping Cart with ${cartCount} items`}
-              title="Shopping Cart"
-              onClick={() => setCartCount((prev) => (prev + 1) % 10)}
+              title="Open Shopping Bag"
+              onClick={openCartDrawer}
             >
               <svg
                 className="nav-svg-icon"
@@ -256,8 +266,8 @@ const Navbar = ({ currentView = 'home', onNavigate = () => {} }) => {
             type="button"
             className="nav-icon-btn mobile-cart-btn"
             aria-label={`Shopping Cart with ${cartCount} items`}
-            title="Shopping Cart"
-            onClick={() => setCartCount((prev) => (prev + 1) % 10)}
+            title="Open Shopping Bag"
+            onClick={openCartDrawer}
           >
             <svg
               className="nav-svg-icon"

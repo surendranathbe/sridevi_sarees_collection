@@ -5,6 +5,8 @@ import Footer from './components/Footer';
 import AboutPage from './components/AboutPage';
 import ContactUs from './components/ContactUs';
 import OurCollections from './components/our-collections';
+import CartDrawer from './components/CartDrawer';
+import { SAREE_CATEGORIES } from './data/products';
 import ScrollProgressCircle from './components/ScrollProgressCircle';
 import AdminLogin from './admindashboard/AdminLogin';
 import AdminDashboard from './admindashboard/AdminDashboard';
@@ -301,6 +303,30 @@ const occasions = [
   }
 ];
 
+const VALID_COLLECTION_CATEGORY_IDS = new Set(SAREE_CATEGORIES.map((c) => c.id));
+
+const parseCollectionsCategoryFromLocation = () => {
+  if (typeof window === 'undefined') return 'all';
+  const rawPath = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
+  let path = rawPath;
+  try {
+    path = decodeURIComponent(rawPath);
+  } catch {
+    path = rawPath;
+  }
+
+  const prefixes = ['/our-collections/', '/collections/'];
+  for (const prefix of prefixes) {
+    if (path.startsWith(prefix)) {
+      const slug = path.slice(prefix.length).split('/')[0].trim();
+      if (slug && VALID_COLLECTION_CATEGORY_IDS.has(slug)) {
+        return slug;
+      }
+    }
+  }
+  return 'all';
+};
+
 const parseViewFromLocation = () => {
   if (typeof window === 'undefined') return 'home';
   const rawPath = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
@@ -364,10 +390,12 @@ const parseViewFromLocation = () => {
     return 'contact';
   }
 
-  // Our Collections routes
+  // Our Collections routes (including dedicated per-category pages: /our-collections/<category-id>)
   if (
     path === '/our-collections' ||
+    path.startsWith('/our-collections/') ||
     path === '/collections' ||
+    path.startsWith('/collections/') ||
     path === '/our collections' ||
     rawPath === '/our%20collections' ||
     hash === '#our-collections' ||
@@ -385,6 +413,7 @@ const parseViewFromLocation = () => {
 
 function App() {
   const [currentView, setCurrentView] = useState(() => parseViewFromLocation());
+  const [collectionsCategory, setCollectionsCategory] = useState(() => parseCollectionsCategoryFromLocation());
   const [authToken, setAuthToken] = useState(() => getAdminToken());
   const [isVerifyingAuth, setIsVerifyingAuth] = useState(() => (parseViewFromLocation() === 'admin-dashboard' && Boolean(getAdminToken())));
   const [authVerified, setAuthVerified] = useState(false);
@@ -427,6 +456,7 @@ function App() {
 
     const handleLocationChange = () => {
       setCurrentView(parseViewFromLocation());
+      setCollectionsCategory(parseCollectionsCategoryFromLocation());
       setAuthToken(getAdminToken());
     };
 
@@ -516,10 +546,22 @@ function App() {
         window.history.pushState({}, '', '/contact-us');
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (view === 'collections' || view === '/our-collections' || view === '#our-collections') {
+    } else if (
+      view === 'collections' ||
+      view === '/our-collections' ||
+      view === '#our-collections' ||
+      (typeof view === 'string' && view.startsWith('/our-collections/'))
+    ) {
+      const slug =
+        typeof view === 'string' && view.startsWith('/our-collections/')
+          ? view.slice('/our-collections/'.length).split('/')[0].trim()
+          : (typeof targetHref === 'string' && VALID_COLLECTION_CATEGORY_IDS.has(targetHref) ? targetHref : 'all');
+      const nextCat = VALID_COLLECTION_CATEGORY_IDS.has(slug) ? slug : 'all';
       setCurrentView('collections');
+      setCollectionsCategory(nextCat);
       if (typeof window !== 'undefined') {
-        window.history.pushState({}, '', '/our-collections');
+        const nextUrl = nextCat === 'all' ? '/our-collections' : `/our-collections/${nextCat}`;
+        window.history.pushState({}, '', nextUrl);
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (view === 'admin-dashboard' || view === '/admindashboard') {
@@ -893,13 +935,30 @@ function App() {
       {/* Sticky & Transparent Header with Centered Logo & Action Icons */}
       <Navbar currentView={currentView} onNavigate={handleNavigate} />
 
+      {/* Global Slide-over Shopping Bag Drawer */}
+      <CartDrawer onNavigate={handleNavigate} />
+
       {/* View Switcher: About Us Page vs Contact Us Page vs Our Collections Page vs Home Luxury Showcase */}
       {currentView === 'about' ? (
         <AboutPage onNavigate={handleNavigate} />
       ) : currentView === 'contact' ? (
         <ContactUs onNavigate={handleNavigate} />
       ) : currentView === 'collections' ? (
-        <OurCollections onNavigate={handleNavigate} />
+        <OurCollections
+          key={collectionsCategory}
+          onNavigate={handleNavigate}
+          initialCategory={collectionsCategory}
+          onCategoryRouteChange={(catId) => {
+            const nextCat = VALID_COLLECTION_CATEGORY_IDS.has(catId) ? catId : 'all';
+            setCollectionsCategory(nextCat);
+            if (typeof window !== 'undefined') {
+              const targetUrl = nextCat === 'all' ? '/our-collections' : `/our-collections/${nextCat}`;
+              if (window.location.pathname !== targetUrl) {
+                window.history.pushState({}, '', targetUrl);
+              }
+            }
+          }}
+        />
       ) : (
         <main id="main-content">
           <SareeHero />

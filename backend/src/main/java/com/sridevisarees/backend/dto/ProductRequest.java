@@ -4,17 +4,23 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class ProductRequest {
 
-    @NotBlank(message = "Product ID is required")
-    @Size(min = 1, max = 50, message = "Product ID must be between 1 and 50 characters")
+    @Size(max = 50, message = "Product ID must not exceed 50 characters")
+    @Pattern(regexp = "^$|^[a-zA-Z0-9-]+$", message = "Product ID may only contain letters, numbers, and hyphens")
     private String productId;
 
     @NotBlank(message = "Product name is required")
     @Size(min = 2, max = 150, message = "Product name must be between 2 and 150 characters")
     private String name;
+
+    @NotBlank(message = "Saree category is required")
+    @Size(min = 2, max = 80, message = "Category must be between 2 and 80 characters")
+    @Pattern(regexp = "^[a-z0-9-]+$", message = "Invalid category format")
+    private String category;
 
     @Size(max = 2000, message = "Description must not exceed 2000 characters")
     private String description;
@@ -35,8 +41,13 @@ public class ProductRequest {
     }
 
     public ProductRequest(String productId, String name, String description, String firstImageUrl, String hoverImageUrl, Double cost) {
+        this(productId, name, "", description, firstImageUrl, hoverImageUrl, cost);
+    }
+
+    public ProductRequest(String productId, String name, String category, String description, String firstImageUrl, String hoverImageUrl, Double cost) {
         this.productId = productId;
         this.name = name;
+        this.category = category;
         this.description = description;
         this.firstImageUrl = firstImageUrl;
         this.hoverImageUrl = hoverImageUrl;
@@ -57,6 +68,14 @@ public class ProductRequest {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getDescription() {
