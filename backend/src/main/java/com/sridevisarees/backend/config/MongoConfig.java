@@ -24,6 +24,11 @@ public class MongoConfig {
     public static final String DATABASE_NAME = "sridevi_collections_db";
     public static final String LOCAL_FALLBACK_URI = "mongodb://localhost:27017/sridevi_collections_db";
 
+    private static final int CONNECT_TIMEOUT_MS = 15000;
+    private static final int READ_TIMEOUT_MS = 15000;
+    private static final int SERVER_SELECTION_TIMEOUT_MS = 15000;
+    private static final int MAX_CONNECTION_IDLE_MS = 60000;
+
     @Value("${spring.data.mongodb.uri:}")
     private String configuredUri;
 
@@ -31,6 +36,15 @@ public class MongoConfig {
     @Primary
     public MongoClient mongoClient() {
         String uri = resolveMongoUri();
+        boolean isCloudEnv = System.getenv("RENDER") != null;
+        boolean isRemoteUri = uri != null && !uri.contains("localhost") && !uri.contains("127.0.0.1");
+
+        if (isCloudEnv && !isRemoteUri) {
+            log.error("MONGODB_URI is not configured for cloud deployment! Current target [{}] will fail on Render. " +
+                    "Set the MONGODB_URI environment variable in Render Dashboard to your MongoDB Atlas SRV connection string.",
+                    sanitizeUri(uri));
+        }
+
         MongoClient client = buildClient(uri);
 
         // Verify that the connection and credentials work
@@ -39,21 +53,28 @@ public class MongoConfig {
             log.info("Initialized MongoDB client targeting database: '{}' ({})", DATABASE_NAME, sanitizeUri(uri));
             return client;
         } catch (Exception e) {
-            log.warn("Failed to connect or authenticate with configured MongoDB URI [{}]: {}. Attempting fallback to local MongoDB...",
+            log.warn("Failed to connect or authenticate with configured MongoDB URI [{}]: {}.",
                     sanitizeUri(uri), e.getMessage());
-            try {
-                client.close();
-            } catch (Exception ignored) {}
 
-            try {
-                MongoClient localClient = buildClient(LOCAL_FALLBACK_URI);
-                localClient.getDatabase(DATABASE_NAME).runCommand(new org.bson.Document("ping", 1));
-                log.info("Successfully connected to local MongoDB at localhost:27017/{}", DATABASE_NAME);
-                return localClient;
-            } catch (Exception localEx) {
-                log.warn("Local MongoDB fallback also failed: {}. Continuing with configured client.", localEx.getMessage());
-                return buildClient(uri);
+            // Only attempt localhost fallback in local development when a remote URI wasn't explicitly set
+            if (!isCloudEnv && !isRemoteUri && !LOCAL_FALLBACK_URI.equals(uri)) {
+                try {
+                    client.close();
+                } catch (Exception ignored) {}
+
+                try {
+                    MongoClient localClient = buildClient(LOCAL_FALLBACK_URI);
+                    localClient.getDatabase(DATABASE_NAME).runCommand(new org.bson.Document("ping", 1));
+                    log.info("Successfully connected to local MongoDB at localhost:27017/{}", DATABASE_NAME);
+                    return localClient;
+                } catch (Exception localEx) {
+                    log.warn("Local MongoDB fallback also failed: {}. Continuing with configured client.", localEx.getMessage());
+                    return buildClient(uri);
+                }
             }
+
+            // Return the configured client so the driver can retry/recover once Atlas is reachable
+            return client;
         }
     }
 
@@ -63,15 +84,17 @@ public class MongoConfig {
             MongoClientSettings settings = MongoClientSettings.builder()
                     .applyConnectionString(connectionString)
                     .applyToSocketSettings(builder -> builder
-                            .connectTimeout(5000, TimeUnit.MILLISECONDS)
-                            .readTimeout(5000, TimeUnit.MILLISECONDS))
+                            .connectTimeout(CONNECT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+                            .readTimeout(READ_TIMEOUT_MS, TimeUnit.MILLISECONDS))
                     .applyToClusterSettings(builder -> builder
-                            .serverSelectionTimeout(5000, TimeUnit.MILLISECONDS))
+                            .serverSelectionTimeout(SERVER_SELECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS))
+                    .applyToConnectionPoolSettings(builder -> builder
+                            .maxConnectionIdleTime(MAX_CONNECTION_IDLE_MS, TimeUnit.MILLISECONDS))
                     .build();
             return MongoClients.create(settings);
         } catch (Exception ex) {
             log.error("Failed to build MongoClient for URI [{}]: {}", sanitizeUri(connectionUri), ex.getMessage());
-            return MongoClients.create("mongodb://localhost:27017");
+            return MongoClients.create(LOCAL_FALLBACK_URI);
         }
     }
 
